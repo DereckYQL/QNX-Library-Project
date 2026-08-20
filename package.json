@@ -1,0 +1,17 @@
+{
+"name" : "biblioteca_nombre_backend",
+"version" : "1.0.0",
+"description" : "backen para conectar biblioteca con MYSQL",
+"main" : "server.js",
+"script" : {
+    "start" : "mode server.js"
+},
+
+"dependencies":{
+    "express" : "^ 4.19.2",
+    "MySQl 2" : "^ 3,10.0",
+    "cors" : "^ 2.8.5",
+    "dotenv" : "^ 16.4.5"
+}
+
+}
