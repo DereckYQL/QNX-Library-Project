@@ -1,0 +1,49 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catalogo - Biblioteca Virtual</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+  <header>
+    <h1>Biblioteca Virtual</h1>
+  </header>
+
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="login.html">Iniciar Sesion</a>
+    <a href="registro.html">Registrar Libro</a>
+    <a href="catalogo.html" class="activo">Catalogo</a>
+  </nav>
+
+  <main>
+    <section>
+      <h2>Catalogo de Libros</h2>
+      <div id="mensaje-error" class="mensaje mensaje-error" style="display:none">
+        No se pudo cargar el catalogo. Intente mas tarde.
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Titulo</th>
+            <th>Autor</th>
+            <th>Genero</th>
+            <th>Disponible</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo-tabla"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>Proyecto Biblioteca &mdash; 4&deg; Medio</p>
+  </footer>
+
+  <script src="js/catalogo.js"></script>
+</body>
+</html>

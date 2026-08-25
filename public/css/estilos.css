@@ -1,0 +1,162 @@
+﻿* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #222;
+}
+
+nav {
+  background-color: #003366;
+  display: flex;
+}
+
+nav a {
+  color: #ccc;
+  text-decoration: none;
+  padding: 14px 20px;
+  display: block;
+  font-size: 0.9rem;
+}
+
+nav a:hover {
+  color: white;
+  background-color: #002244;
+}
+
+nav a.activo {
+  color: white;
+  border-bottom: 3px solid white;
+}
+
+header {
+  background-color: #003366;
+  color: white;
+  padding: 18px 20px 14px;
+  text-align: center;
+  font-size: 1.4rem;
+}
+
+main {
+  max-width: 720px;
+  margin: 30px auto;
+  padding: 0 16px;
+}
+
+section {
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+section h2 {
+  margin-bottom: 14px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #003366;
+}
+
+.imagen-principal {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.bienvenida p {
+  color: #444;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 2px solid #003366;
+  color: #003366;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.disponible-si { color: green; }
+.disponible-no { color: #c0392b; }
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+input:focus {
+  outline: none;
+  border-color: #003366;
+}
+
+button {
+  padding: 8px 14px;
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+button:hover { background-color: #002244; }
+
+.btn-secundario { background-color: #888; }
+.btn-secundario:hover { background-color: #666; }
+
+.mensaje {
+  padding: 10px;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.mensaje-ok { background-color: #e8f5e9; color: #2e7d32; }
+.mensaje-error { background-color: #fdecea; color: #c62828; }
+.mensaje-info { background-color: #e3f2fd; color: #1565c0; }
+
+footer {
+  background-color: #003366;
+  color: #aaa;
+  text-align: center;
+  padding: 12px;
+  font-size: 0.8rem;
+}
