@@ -1,0 +1,15 @@
+{
+  "name": "biblioteca_dk",
+  "version": "2.1.0",
+  "description": "Biblioteca virtual modular con Express y MySQL",
+  "main": "public/js/server.js",
+  "scripts": {
+    "start": "node public/js/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mysql2": "^3.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}
