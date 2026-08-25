@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Libro — QNX Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Roboto+Slab:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-brand">📚 QNX Library</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-item">Inicio</a></li>
+            <li><a href="catalogo.html" class="nav-item">Catálogo</a></li>
+            <li><a href="registro.html" class="nav-item active">Registrar Libro</a></li>
+            <li><a href="login.html" class="nav-item">Iniciar Sesión</a></li>
+        </ul>
+    </nav>
+
+    <section class="page active">
+        <div class="page-banner">
+            <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&q=80" alt="Registrar libro" class="page-banner-img">
+            <div class="page-banner-overlay">
+                <h2>Registrar Libro</h2>
+                <p>Agrega nuevos títulos a la biblioteca.</p>
+            </div>
+        </div>
+        <div class="section-content">
+            <div class="form-container">
+                <form onsubmit="registrarLibro(event)">
+                    <div class="form-group">
+                        <label for="titulo">Título</label>
+                        <input type="text" id="titulo" placeholder="Título del libro" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="autor">Autor</label>
+                        <input type="text" id="autor" placeholder="Nombre del autor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="generoSelect">Género</label>
+                        <select id="generoSelect">
+                            <option value="">Selecciona un género</option>
+                            <option value="Novela">Novela</option>
+                            <option value="Ciencia ficción">Ciencia ficción</option>
+                            <option value="Fábula">Fábula</option>
+                            <option value="Novela clásica">Novela clásica</option>
+                            <option value="Poesía">Poesía</option>
+                            <option value="Historia">Historia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="disponibles">Disponibilidad</label>
+                        <select id="disponibles">
+                            <option value="true">Disponible</option>
+                            <option value="false">No disponible</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">Registrar Libro</button>
+                </form>
+                <div id="registro-msg" class="form-msg"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 QNX Library</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
