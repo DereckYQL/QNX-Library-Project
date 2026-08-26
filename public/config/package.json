@@ -1,7 +1,7 @@
 {
   "name": "qnx-library",
-  "version": "2.2.0",
-  "description": "QNX Library v2.2 - Hibrido El Libro Total + Bibliotecas UdeC (Express + MySQL)",
+  "version": "2.3.0",
+  "description": "QNX Library v2.3 - Diseño clasico v2.2 + 24 libros (Express + MySQL)",
   "main": "public/js/server.js",
   "scripts": {
     "start": "node public/js/server.js"
