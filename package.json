@@ -1,0 +1,15 @@
+﻿{
+  "name": "qnx-library",
+  "version": "2.3.0",
+  "description": "QNX Library v2.3 - Diseno clasico v2.2 + 24 libros (Express + MySQL)",
+  "main": "public/js/server.js",
+  "scripts": {
+    "start": "node public/js/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mysql2": "^3.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}
