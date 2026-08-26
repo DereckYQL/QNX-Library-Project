@@ -3,33 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biblioteca DK - Registro</title>
+  <title>QNX Library - Registro</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header>
-    <h1>Biblioteca DK</h1>
+    <a class="brand" href="index.html" aria-label="QNX Library inicio">
+      <div class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="rL" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
+            <linearGradient id="rR" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#ffffff"/></linearGradient>
+          </defs>
+          <path d="M 60 14 A 46 46 0 1 0 92 92 L 102 108 L 86 101 L 74 90 A 46 46 0 0 0 60 14 Z M 60 26 A 34 34 0 1 1 66 80 A 34 34 0 0 1 60 26 Z" fill="#f1f5f9"/>
+          <g transform="translate(30 52)">
+            <path d="M 5 8 L 27 2.5 L 27 28.5 L 5 33.2 Z" fill="url(#rL)"/>
+            <path d="M 33 2.5 L 55 8 L 55 33.2 L 33 28.5 Z" fill="url(#rR)"/>
+          </g>
+          <path d="M 68 80 L 86 86 L 84 103 L 77 97 L 70 103 Z" fill="#2563EB"/>
+          <rect x="82" y="18" width="10" height="10" rx="1.5" fill="#60A5FA"/><rect x="88" y="34" width="7" height="7" rx="1.2" fill="#2563EB"/><rect x="96" y="42" width="7" height="7" rx="1.2" fill="#2563EB"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <strong>QNX Library</strong>
+        <small>Library</small>
+      </div>
+    </a>
     <nav>
       <a href="index.html">Inicio</a>
-      <a href="catalogo.html">Catalogo</a>
+      <a href="catalogo.html">Catálogo</a>
       <a href="login.html">Login</a>
-      <a href="registro.html">Registro</a>
+      <a href="registro.html" class="active">Registro</a>
     </nav>
   </header>
-  <main>
+
+  <main class="form-wrap">
     <form id="registroForm">
       <h2>Crear Cuenta</h2>
+      <p class="subtitle">Únete a <strong style="color:#60A5FA">QNX Library</strong> y desbloquea la colección</p>
       <label for="nombre">Nombre</label>
-      <input type="text" id="nombre" name="nombre" required>
+      <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" required>
-      <label for="password">Contrasena</label>
-      <input type="password" id="password" name="password" required>
-      <button type="submit">Registrarse</button>
+      <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" placeholder="Mín. 6 caracteres" required>
+      <button type="submit">Registrarse →</button>
+      <p class="form-foot">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
     </form>
   </main>
+
   <footer>
-    <p>Biblioteca DK - Sistema de gestion de biblioteca virtual v2.1</p>
+    <p><strong>QNX Library</strong> — Sistema de gestión de biblioteca virtual v2.1</p>
   </footer>
   <script src="js/script.js"></script>
 </body>

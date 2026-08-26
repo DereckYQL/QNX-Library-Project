@@ -3,29 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biblioteca DK - Inicio</title>
+  <title>QNX Library - Inicio</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header>
-    <h1>Biblioteca DK</h1>
+    <a class="brand" href="index.html" aria-label="QNX Library inicio">
+      <div class="brand-logo" aria-hidden="true">
+        <!-- Q + Libro + pixeles mini -->
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bL" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
+            <linearGradient id="bR" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#ffffff"/></linearGradient>
+          </defs>
+          <path d="M 60 14 A 46 46 0 1 0 92 92 L 102 108 L 86 101 L 74 90 A 46 46 0 0 0 60 14 Z M 60 26 A 34 34 0 1 1 66 80 A 34 34 0 0 1 60 26 Z" fill="#f1f5f9"/>
+          <g transform="translate(30 52)">
+            <path d="M 5 8 L 27 2.5 L 27 28.5 L 5 33.2 Z" fill="url(#bL)"/>
+            <path d="M 33 2.5 L 55 8 L 55 33.2 L 33 28.5 Z" fill="url(#bR)"/>
+            <path d="M 30 1.2 L 30 30.5" stroke="#0f172a" stroke-width="1.2" opacity="0.7"/>
+          </g>
+          <path d="M 68 80 L 86 86 L 84 103 L 77 97 L 70 103 Z" fill="#2563EB"/>
+          <rect x="82" y="18" width="10" height="10" rx="1.5" fill="#60A5FA"/><rect x="88" y="34" width="7" height="7" rx="1.2" fill="#2563EB"/><rect x="96" y="42" width="7" height="7" rx="1.2" fill="#2563EB"/><rect x="78" y="32" width="6" height="6" rx="1" fill="#1E3A8A"/><rect x="84" y="44" width="6" height="6" rx="1" fill="#3b82f6"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <strong>QNX Library</strong>
+        <small>Library</small>
+      </div>
+    </a>
     <nav>
-      <a href="index.html">Inicio</a>
-      <a href="catalogo.html">Catalogo</a>
+      <a href="index.html" class="active">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
       <a href="login.html">Login</a>
       <a href="registro.html">Registro</a>
     </nav>
   </header>
-  <div class="hero">
-    <h2>Bienvenido a la Biblioteca Virtual</h2>
-    <p>Explora nuestro catalogo de libros, registra tu cuenta y accede a una coleccion digital en crecimiento.</p>
-  </div>
+
+  <section class="hero">
+    <!-- Réplica del bloque superior del modelo: Q grande | QNX LIBRARY con glow -->
+    <div class="hero-brand" aria-hidden="true">
+      <div class="q-mark">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="hg" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#60A5FA" stop-opacity="0.9"/><stop offset="55%" stop-color="#1e3a8a" stop-opacity="0.6"/><stop offset="100%" stop-color="#0f172a" stop-opacity="0"/></radialGradient>
+            <linearGradient id="hL" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
+            <linearGradient id="hR" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#e0f2fe"/></linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r="44" fill="url(#hg)" stroke="rgba(96,165,250,0.35)" stroke-width="1.2"/>
+          <path d="M 60 26 A 34 34 0 1 0 86 80 L 97 92 L 83 87 L 68 80 A 34 34 0 0 0 60 26 Z" fill="none" stroke="#dbeafe" stroke-width="7" opacity="0.95"/>
+          <g transform="translate(30 52)">
+            <path d="M 5 8 L 27 2.5 L 27 28.5 L 5 33.2 Z" fill="url(#hL)"/>
+            <path d="M 33 2.5 L 55 8 L 55 33.2 L 33 28.5 Z" fill="url(#hR)"/>
+          </g>
+          <path d="M 68 82 L 86 88 L 84 104 L 77 98 L 70 104 Z" fill="#2563EB"/>
+          <rect x="82" y="18" width="10" height="10" rx="1.5" fill="#60A5FA" filter="drop-shadow(0 0 6px #60A5FA)"/><rect x="88" y="34" width="7" height="7" rx="1.2" fill="#3b82f6"/><rect x="96" y="42" width="7" height="7" rx="1.2" fill="#2563EB"/><rect x="78" y="32" width="6" height="6" rx="1" fill="#60A5FA" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="divider"></div>
+      <div class="wordmark">
+        <h1>QNX</h1>
+        <p>LIBRARY</p>
+      </div>
+    </div>
+
+    <div class="hero-badge">Sistema v2.1 · Colección digital</div>
+    <h2><span>Bienvenido a</span> la Biblioteca Virtual</h2>
+    <p>Explora nuestro catálogo, registra tu cuenta y accede a una colección digital en crecimiento con el universo visual QNX: oscuro, luminoso y futurista.</p>
+    <div class="hero-cta">
+      <a href="catalogo.html" class="btn-primary">Explorar catálogo →</a>
+      <a href="registro.html" class="btn-ghost">Crear cuenta</a>
+    </div>
+  </section>
+
   <main>
-    <h2>Libros Destacados</h2>
+    <div class="section-head">
+      <h2>Libros Destacados</h2>
+      <p>Selección curada con efecto neón QNX</p>
+    </div>
     <div id="destacados" class="card-grid"></div>
+
+    <div class="palette" aria-label="Paleta QNX">
+      <span><i style="background:#0F172A; color:#0F172A"></i>#0F172A</span>
+      <span><i style="background:#1E3A8A; color:#1E3A8A"></i>#1E3A8A</span>
+      <span><i style="background:#2563EB; color:#2563EB"></i>#2563EB</span>
+      <span><i style="background:#60A5FA; color:#60A5FA"></i>#60A5FA</span>
+    </div>
   </main>
+
   <footer>
-    <p>Biblioteca DK - Sistema de gestion de biblioteca virtual v2.1</p>
+    <p><strong>QNX Library</strong> — Sistema de gestión de biblioteca virtual v2.1 · Dark neon edition</p>
   </footer>
   <script src="js/script.js"></script>
 </body>
