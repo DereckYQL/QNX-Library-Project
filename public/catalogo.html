@@ -7,55 +7,44 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <a class="brand" href="index.html" aria-label="QNX Library inicio">
-      <div class="brand-logo" aria-hidden="true">
-        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="cL" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
-            <linearGradient id="cR" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#ffffff"/></linearGradient>
-          </defs>
-          <path d="M 60 14 A 46 46 0 1 0 92 92 L 102 108 L 86 101 L 74 90 A 46 46 0 0 0 60 14 Z M 60 26 A 34 34 0 1 1 66 80 A 34 34 0 0 1 60 26 Z" fill="#f1f5f9"/>
-          <g transform="translate(30 52)">
-            <path d="M 5 8 L 27 2.5 L 27 28.5 L 5 33.2 Z" fill="url(#cL)"/>
-            <path d="M 33 2.5 L 55 8 L 55 33.2 L 33 28.5 Z" fill="url(#cR)"/>
-          </g>
-          <path d="M 68 80 L 86 86 L 84 103 L 77 97 L 70 103 Z" fill="#2563EB"/>
-          <rect x="82" y="18" width="10" height="10" rx="1.5" fill="#60A5FA"/><rect x="88" y="34" width="7" height="7" rx="1.2" fill="#2563EB"/><rect x="96" y="42" width="7" height="7" rx="1.2" fill="#2563EB"/>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <strong>QNX Library</strong>
-        <small>Library</small>
-      </div>
-    </a>
-    <nav>
-      <a href="index.html">Inicio</a>
-      <a href="catalogo.html" class="active">Catálogo</a>
-      <a href="login.html">Login</a>
-      <a href="registro.html">Registro</a>
-    </nav>
-  </header>
 
-  <main>
+<header>
+  <a class="brand" href="index.html">
+    <div class="brand-logo">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 14 A46 46 0 1 0 92 92 L102 108 L86 101 L74 90 A46 46 0 0 0 60 14 Z M60 26 A34 34 0 1 1 66 80 A34 34 0 0 1 60 26 Z" fill="#0B1C2B"/><g transform="translate(30 52)"><path d="M5 8 L27 2.5 L27 28.5 L5 33.2 Z" fill="#C9A86A"/><path d="M33 2.5 L55 8 L55 33.2 L33 28.5 Z" fill="#fff"/></g><path d="M68 80 L86 86 L84 103 L77 97 L70 103 Z" fill="#C9A86A"/></svg>
+    </div>
+    <span><strong>QNX Library</strong><small>Catálogo</small></span>
+  </a>
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="catalogo.html" class="active">Catálogo</a>
+    <a href="login.html">Login</a>
+    <a href="registro.html">Registro</a>
+  </nav>
+</header>
+
+<main class="container">
+  <section>
     <div class="section-head">
-      <h2>Catálogo de Libros</h2>
-      <p>Tabla con estética QNX · glass + glow azul</p>
+      <h2>Catálogo de <em>libros</em></h2>
+      <p>Tabla simple con cabecera navy y borde dorado</p>
+    </div>
+
+    <div class="searchbar" style="margin-bottom:1rem;max-width:none">
+      <input type="search" id="filtroCatalogo" placeholder="Filtrar por título, autor o género...">
+      <button type="button" onclick="document.getElementById('filtroCatalogo').value='';document.getElementById('filtroCatalogo').dispatchEvent(new Event('input'))">Limpiar</button>
     </div>
 
     <div class="table-wrap">
-      <table class="tabla-libros" id="tablaLibros">
-        <thead>
-          <tr><th>ID</th><th>Título</th><th>Autor</th><th>Género</th><th>Año</th></tr>
-        </thead>
+      <table id="tablaLibros">
+        <thead><tr><th>ID</th><th>Título</th><th>Autor</th><th>Género</th><th>Año</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
-  </main>
+  </section>
+</main>
 
-  <footer>
-    <p><strong>QNX Library</strong> — Sistema de gestión de biblioteca virtual v2.1</p>
-  </footer>
-  <script src="js/script.js"></script>
+<footer><p><strong>QNX Library</strong> v2.2 · Catálogo</p></footer>
+<script src="js/script.js"></script>
 </body>
 </html>

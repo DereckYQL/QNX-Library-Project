@@ -1,7 +1,7 @@
 {
-  "name": "biblioteca_dk",
-  "version": "2.1.0",
-  "description": "Biblioteca virtual modular con Express y MySQL",
+  "name": "qnx-library",
+  "version": "2.2.0",
+  "description": "QNX Library v2.2 - Hibrido El Libro Total + Bibliotecas UdeC (Express + MySQL)",
   "main": "public/js/server.js",
   "scripts": {
     "start": "node public/js/server.js"

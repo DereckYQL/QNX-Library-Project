@@ -22,4 +22,5 @@ INSERT INTO Libros (titulo, autor, genero, anio) VALUES
 ('Cien anos de soledad', 'Gabriel Garcia Marquez', 'Realismo magico', 1967),
 ('Don Quijote de la Mancha', 'Miguel de Cervantes', 'Clasico', 1605),
 ('La sombra del viento', 'Carlos Ruiz Zafon', 'Misterio', 2001),
-('El principito', 'Antoine de Saint-Exupery', 'Ficcion', 1943);
+('El principito', 'Antoine de Saint-Exupery', 'Ficcion', 1943),
+
