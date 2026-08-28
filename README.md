@@ -2,8 +2,6 @@
 
 Biblioteca virtual **Express + SQLite** - Colección digital QNX. **v2.5** migra de MySQL a **SQLite** (compatible **DB Browser for SQLite**), agrega usuarios seed **admin** (todos los permisos) y **visitante** con persistencia real.
 
-Repositorio: https://github.com/DereckYQL/QNX-Library-Project
-
 ## Novedades v2.5 (vs v2.4 MySQL)
 
 - **SQLite + DB Browser:** `better-sqlite3` + archivo `public/database/biblioteca.db` (WAL, FK ON). Abre directo con **DB Browser for SQLite**: Archivo > Abrir base de datos > `biblioteca.db`. Sin instalar MySQL.
