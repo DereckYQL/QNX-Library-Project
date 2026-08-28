@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QNX Library - Registro</title>
+  <title>QNX Library - Registro v2.4</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -26,19 +26,21 @@
 <main class="form-wrap">
   <form id="registroForm" class="form-box">
     <h2>Crear Cuenta</h2>
-    <p class="sub">Únete a QNX Library</p>
+    <p class="sub">Únete a QNX Library — validación + hashing</p>
+    <div class="alert" id="regAlert"></div>
     <label for="nombre">Nombre</label>
-    <input type="text" id="nombre" required placeholder="Tu nombre">
+    <input type="text" id="nombre" required placeholder="Tu nombre" minlength="2" autocomplete="name">
     <label for="email">Email</label>
-    <input type="email" id="email" required placeholder="tu@email.com">
+    <input type="email" id="email" required placeholder="tu@email.com" autocomplete="email">
     <label for="password">Contraseña</label>
-    <input type="password" id="password" required placeholder="Mín. 6 caracteres">
+    <input type="password" id="password" required placeholder="Mín. 6 caracteres" minlength="6" autocomplete="new-password">
     <button type="submit">Registrarse</button>
     <p class="form-foot">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
   </form>
 </main>
 
-<footer><p><strong>QNX Library</strong> v2.3</p></footer>
+<footer><p><strong>QNX Library</strong> v2.4 · Registro funcional con JWT</p></footer>
 <script src="js/script.js"></script>
+<script src="js/auth.js"></script>
 </body>
 </html>

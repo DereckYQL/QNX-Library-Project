@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QNX Library - Catálogo</title>
+  <title>QNX Library - Catálogo v2.4</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
     <div class="brand-logo">
       <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 14 A46 46 0 1 0 92 92 L102 108 L86 101 L74 90 A46 46 0 0 0 60 14 Z M60 26 A34 34 0 1 1 66 80 A34 34 0 0 1 60 26 Z" fill="#0B1C2B"/><g transform="translate(30 52)"><path d="M5 8 L27 2.5 L27 28.5 L5 33.2 Z" fill="#C9A86A"/><path d="M33 2.5 L55 8 L55 33.2 L33 28.5 Z" fill="#fff"/></g><path d="M68 80 L86 86 L84 103 L77 97 L70 103 Z" fill="#C9A86A"/></svg>
     </div>
-    <span><strong>QNX Library</strong><small>Catálogo</small></span>
+    <span><strong>QNX Library</strong><small>Catálogo v2.4</small></span>
   </a>
   <nav>
     <a href="index.html">Inicio</a>
@@ -27,24 +27,112 @@
   <section>
     <div class="section-head">
       <h2>Catálogo de <em>libros</em></h2>
-      <p>Tabla simple con cabecera navy y borde dorado</p>
+      <p id="countInfo">—</p>
     </div>
 
-    <div class="searchbar" style="margin-bottom:1rem;max-width:none">
-      <input type="search" id="filtroCatalogo" placeholder="Filtrar por título, autor o género...">
-      <button type="button" onclick="document.getElementById('filtroCatalogo').value='';document.getElementById('filtroCatalogo').dispatchEvent(new Event('input'))">Limpiar</button>
+    <div class="filters">
+      <input type="search" id="filtroCatalogo" placeholder="Buscar título, autor, género...">
+      <select id="filtroGenero"><option value="">Todos los géneros</option></select>
+      <select id="filtroDisp">
+        <option value="">Todos</option>
+        <option value="1">Disponibles</option>
+        <option value="0">Agotados</option>
+      </select>
+      <select id="limitSelect">
+        <option value="8">8 por página</option>
+        <option value="12">12 por página</option>
+        <option value="24">24 por página</option>
+      </select>
+      <button type="button" id="btnLimpiar" class="btn-sm">Limpiar</button>
     </div>
+
+    <div id="loadingBox" class="loading" style="display:none"><span class="spinner"></span> Cargando libros...</div>
 
     <div class="table-wrap">
       <table id="tablaLibros">
-        <thead><tr><th>ID</th><th>Título</th><th>Autor</th><th>Género</th><th>Año</th></tr></thead>
+        <thead><tr>
+          <th data-sort="id">ID <span class="sort">↕</span></th>
+          <th data-sort="titulo">Título <span class="sort">↕</span></th>
+          <th data-sort="autor">Autor <span class="sort">↕</span></th>
+          <th data-sort="genero">Género <span class="sort">↕</span></th>
+          <th data-sort="anio">Año <span class="sort">↕</span></th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr></thead>
         <tbody></tbody>
       </table>
     </div>
+
+    <div class="pagination" id="paginacion"></div>
+    <p id="pageInfo" class="page-info" style="text-align:center;margin-top:0.4rem"></p>
+
+    <div id="gridLibros" class="grid-books" style="margin-top:1.5rem"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 id="formTitle">Agregar libro</h2>
+      <p>Requiere iniciar sesión (JWT). Validación en backend + frontend.</p>
+    </div>
+    <form id="formLibro" class="form-box wide" style="margin:0;max-width:none">
+      <input type="hidden" id="libroId">
+      <div class="form-row">
+        <div>
+          <label for="fTitulo">Título *</label>
+          <input id="fTitulo" required placeholder="Ej: 1984" maxlength="255">
+        </div>
+        <div>
+          <label for="fAutor">Autor *</label>
+          <input id="fAutor" required placeholder="Ej: George Orwell" maxlength="255">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="fGenero">Género</label>
+          <input id="fGenero" placeholder="Ej: Distopia" list="fGeneroList">
+          <datalist id="fGeneroList"></datalist>
+        </div>
+        <div>
+          <label for="fAnio">Año</label>
+          <input id="fAnio" type="number" placeholder="1949" min="1000" max="2100">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="fStock">Stock</label>
+          <input id="fStock" type="number" placeholder="3" min="0" max="999" value="3">
+        </div>
+        <div>
+          <label for="fPortada">Portada (imagen)</label>
+          <input id="fPortada" type="file" accept="image/*">
+        </div>
+      </div>
+      <label for="fImagen">URL imagen (o se usa la subida)</label>
+      <input id="fImagen" placeholder="https://... o /uploads/xxx.jpg">
+
+      <div style="display:flex;gap:0.6rem">
+        <button type="submit" style="flex:1">Guardar libro</button>
+        <button type="button" id="btnCancelarEdit" class="btn-sm" style="width:auto;padding:0.8rem 1.1rem">Cancelar</button>
+      </div>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">* Campos obligatorios. POST/PUT requieren token. Usa el filtro y ordena clickeando cabeceras.</p>
+    </form>
   </section>
 </main>
 
-<footer><p><strong>QNX Library</strong> v2.3 · Catálogo — 24 libros</p></footer>
+<!-- Modal confirmar borrado -->
+<div id="modalBackdrop" class="modal-backdrop">
+  <div id="modalConfirm" class="modal">
+    <h3>Confirmar eliminación</h3>
+    <p id="modalMsg">¿Eliminar este libro?</p>
+    <div class="modal-actions">
+      <button id="modalCancel" class="cancel">Cancelar</button>
+      <button id="modalConfirmBtn" class="confirm">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<footer><p><strong>QNX Library</strong> v2.4 · Catálogo avanzado — paginación, orden, filtros, CRUD + préstamos</p></footer>
 <script src="js/script.js"></script>
+<script src="js/catalogo.js"></script>
 </body>
 </html>

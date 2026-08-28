@@ -1,6 +1,45 @@
-﻿# Changelog - QNX Library Project
+# Changelog - QNX Library Project
 
 Todos los cambios notables por versión (tags).
+
+---
+
+## [v2.4.0] - 2026-08-28 - Auth + Préstamos + Catálogo avanzado
+
+**Base:** v2.3.0 (24 libros, diseño clásico #0B1C2B/#C9A86A se mantiene)
+
+### Críticas de Claude corregidas
+
+| Crítica v2.3 | Solución v2.4 |
+|--------------|---------------|
+| Login/registro solo HTML sin backend | `POST /api/auth/register` + `POST /api/auth/login` + `GET /api/auth/me`, tabla `Usuarios` real, `bcryptjs` (hash 10 rounds), `JWT` (7d), `fetch` en `auth.js`, `localStorage` token |
+| Rutas sin protección | `authMiddleware` verifica `Bearer` en `POST/PUT/DELETE /api/libros`, `POST /api/upload`, `POST/GET /api/prestamos` |
+| Sin validación inputs | `validarLibro()` y `validarRegistro()`: titulo/autor min 2, anio 1000-2100, stock 0-999, email regex, password min 6 |
+| `mysql2` callbacks | Migrado a `mysql2/promise` con `createPool` + `async/await` + `try/catch` |
+
+### Funcionalidad catálogo nueva
+- **Buscador/filtro:** `?search=` (titulo/autor/genero LIKE), `?genero=` exacto, `?disponible=0/1`
+- **Paginación:** `?page` + `?limit` (max 50), respuesta `{data,total,page,totalPages}`
+- **Ordenar columnas:** click en `<th data-sort>` alterna `asc/desc`
+- **CRUD desde frontend:** botones Editar/Eliminar + form crear/editar con subida portada (`multer` → `/uploads`)
+- **Página detalle:** `libro.html?id=X` + `GET /api/libros/:id`
+- **Disponibilidad:** `disponible` + `stock` en `Libros`, 3 libros agotados
+
+### Sistema préstamos
+- **Tabla `Prestamos`:** `id, usuario_id FK, libro_id FK, fecha_prestamo, fecha_devolucion, estado`
+- **Endpoints:** `POST /api/prestamos`, `GET /api/prestamos/mis`, `PUT /api/prestamos/:id/devolver`, `GET /api/prestamos`
+
+### UX
+- Toast, modal delete, loading spinner, manejo errores visible
+
+### Otros
+- `.env` agrega `JWT_SECRET` y `JWT_EXPIRES_IN`
+- Rate limiting `express-rate-limit` en `/api/auth/*` (20 req / 15 min)
+- Subida portada `multer` + `POST /api/upload` → `/uploads`
+
+### Migración desde v2.3
+- `npm install` (nuevas deps)
+- Re-ejecutar `schema.sql` (agrega columnas `disponible,stock,imagen_url` + tabla `Prestamos`)
 
 ---
 
@@ -9,66 +48,24 @@ Todos los cambios notables por versión (tags).
 **Base:** v2.2.0 (diseño clásico se mantiene)
 
 ### Novedades
-- **Base de datos ampliada:** \public/database/schema.sql\ pasa de **4 a 24 libros** (+20):
-  \1984\, \Rayuela\, \Ficciones\, \La casa de los espíritus\, \El amor en los tiempos del cólera\, \Crónica de una muerte anunciada\, \El túnel\, \Pedro Páramo\, \Como agua para chocolate\, \El Aleph\, \Orgullo y prejuicio\, \Moby Dick\, \El señor de los anillos: La Comunidad del Anillo\, \Harry Potter y la piedra filosofal\, \Dune\, \Fahrenheit 451\, \Crimen y castigo\, \El código Da Vinci\, \Los juegos del hambre\, \El psicoanalista\.
-- **Mantiene diseño v2.2:** paleta #0B1C2B + dorado, hero searchbar, grid \ook\ con top dorado alterno, filtro \#filtroCatalogo\.
-- **Ajustes menores:** \style.css\ +12 B, \logo.svg\ vuelve a versión detallada 2085 B (igual que v2.1 neon pero header navy clásico), footer actualizado a v2.3.
-- **Package:** \qnx-library@2.3.0\ - descripción "Diseño clásico v2.2 + 24 libros".
-- **8 archivos cambiados:** 63 ins / 16 del vs v2.2.
-
-### Migración desde v2.2
-- Re-ejecutar \schema.sql\ para obtener 24 libros, o hacer INSERT incremental.
+- **Base de datos ampliada:** `public/database/schema.sql` pasa de **4 a 24 libros** (+20)
+- **Mantiene diseño v2.2:** paleta #0B1C2B + dorado, hero searchbar, grid `book` con top dorado alterno
+- **Package:** `qnx-library@2.3.0`
 
 ---
 
 ## [v2.2.0] - 2026-08-26 - Híbrido Clásico (El Libro Total + UdeC)
-
-**Base:** v2.1 dark neon (reemplazo total)
-
-### Novedades
-- **Rediseño visual completo:** de neon oscuro a clásico elegante.
-  - Paleta nueva: **#0B1C2B navy, #C9A86A dorado, blanco** (vs #0F172A/#1E3A8A/#2563EB/#60A5FA).
-  - \style.css\: **6345 B** vs 14806 B (-57% / -716 líneas), más ligero y minimalista.
-  - Logo: de gradiente neon 2085 B a flat clásico **821 B** (\#0B1C2B\ + dorado).
-- **Hero nuevo:** título "Biblioteca clásica y digital" + **searchbar** con input "¿Qué buscas hoy?" + botón Buscar (redirige a catálogo).
-- **Accesos rápidos (UdeC):** grilla 4 cards: *Horarios, Préstamo, Reservas, Certificado* con iconos SVG stroke (vs destacados neon).
-- **Libros destacados:** nueva grilla \grid-books\ + componente \.book\ (\ook-top\ + \ook-body\ + \	ag\), top dorado alterno \gold\ cada 2º libro.
-- **Script.js:** + lógica fallback si API vacía/error (3 libros hardcodeados) + filtro en vivo \#filtroCatalogo\ (input event filtra filas tabla).
-- **Catálogo:** tabla simplificada cabecera navy/borde dorado + **filtro + botón Limpiar**.
-- **Login/Registro:** simplificados, sin glass/glow, cabecera compacta.
-- **9 archivos:** 338 ins / 846 del net vs v2.1.
-- **Package:** rename \iblioteca_dk@2.1.0\ → \qnx-library@2.2.0\ + descripción híbrida.
-
-### Breaking
-- Estética incompatible con v2.1 (cambio total CSS/HTML). No hay migración automática de temas.
+- Rediseño a clásico elegante #0B1C2B/#C9A86A, hero searchbar, 4 accesos rápidos
 
 ---
 
 ## [v2.1.0] - 2026-08-26 - Dark Neon Edition
-
-**Base:** v2.1 anterior (Biblioteca DK simple, 2145 B CSS)
-
-### Novedades
-- **Universo visual QNX neon:** oscuro, luminoso, futurista.
-  - Paleta **#0F172A, #1E3A8A, #2563EB, #60A5FA** (mostrada en footer).
-  - \style.css\ **14806 B** (+127% vs 2145 B) con glass, glow azul, gradientes, cards neon.
-- **Hero premium:** Q gigante con glow radial (\adialGradient #hg\), libro central con pitch + "pixeles" flotantes, wordmark QNX LIBRARY con divider, badge "Sistema v2.1 — Colección digital", CTA "Explorar catálogo →" + "Crear cuenta".
-- **Header brand SVG:** Q + libro + pixeles mini con linearGradients.
-- **Libros destacados:** \card-grid\ + \card\ neon con fetch \/api/libros\.
-- **Catálogo:** \	able-wrap + tabla-libros\ con estética glass + glow azul.
-- **4 libros seed:** \schema.sql\ 4 inserts (Cien años..., Don Quijote, Sombra del viento, Principito).
-- **Backend:** \server.js\ Express CRUD completo (\GET /api/libros, GET /:id, POST, PUT, DELETE\) + MySQL.
-- **Package:** \iblioteca_dk@2.1.0\, dependencies express, mysql2, cors, dotenv.
-
-### Nota
-- Este tag reemplaza el contenido previo de v2.1 (Biblioteca DK básica) con la edición neon completa.
+- Universo neon #0F172A/#2563EB, hero Q glow, 4 libros seed, CRUD Express
 
 ---
 
-## Historial previo (remoto)
-
-- **v2.1 (2026-08-25)** - Biblioteca DK básica (2145 B CSS, hero simple).
-- **v2.0 (2026-08-25)** - Estructura \public/\ + \.env.example\ + README.
-- **v1.5 (2026-08-25)** - Config modular + package-lock 968 líneas.
-- **v1.0 (2026-08-20)** - Init: index, style 67 líneas, server vacío.
-
+## Historial previo
+- **v2.1 (2026-08-25)** - Biblioteca DK básica
+- **v2.0 (2026-08-25)** - Estructura `public/` + `.env.example`
+- **v1.5 (2026-08-25)** - Config modular
+- **v1.0 (2026-08-20)** - Init

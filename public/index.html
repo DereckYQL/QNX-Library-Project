@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QNX Library v2.3</title>
+  <title>QNX Library v2.4</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -32,67 +32,68 @@
 
 <section class="hero">
   <h1>Biblioteca <em>clásica</em> y digital</h1>
-  <form class="searchbar" onsubmit="event.preventDefault(); location.href='catalogo.html'">
+  <p>Colección QNX v2.4 · Auth real, préstamos y catálogo avanzado</p>
+  <form class="searchbar" onsubmit="event.preventDefault();">
     <input type="search" placeholder="¿Qué buscas hoy? Título, autor o género...">
     <button type="submit">Buscar</button>
   </form>
 </section>
 
 <main class="container">
-  <!-- Accesos rápidos (UdeC) -->
   <section>
     <div class="section-head">
       <h2>¿Qué buscas <em>hoy?</em></h2>
-      <p>Accesos directos estilo Bibliotecas UdeC</p>
+      <p>Accesos directos</p>
     </div>
     <div class="grid-4">
       <a class="card" href="catalogo.html">
         <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </span>
-        <h3>Horarios</h3><p>Sala y préstamo</p>
+        <h3>Catálogo</h3><p>24 libros + filtros</p>
       </a>
-      <a class="card" href="catalogo.html">
+      <a class="card" href="prestamos.html">
         <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 6a2 2 0 0 1 2-2h7a3 3 0 0 1 3 3v13H6a4 4 0 0 0-4 4V6z"/><path d="M22 6a2 2 0 0 0-2-2h-7a3 3 0 0 0-3 3v13h8a4 4 0 0 1 4 4V6z"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6a2 2 0 0 1 2-2h7a3 3 0 0 1 3 3v13H6a4 4 0 0 0-4 4V6z"/><path d="M22 6a2 2 0 0 0-2-2h-7a3 3 0 0 0-3 3v13h8a4 4 0 0 1 4 4V6z"/></svg>
         </span>
-        <h3>Préstamo</h3><p>Renueva en línea</p>
+        <h3>Préstamos</h3><p>Mis libros prestados</p>
       </a>
       <a class="card" href="login.html">
         <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
         </span>
-        <h3>Reservas</h3><p>Salas de estudio</p>
+        <h3>Acceso</h3><p>Login con JWT</p>
       </a>
       <a class="card" href="registro.html">
         <span class="icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v4c0 1.5 2.7 3 6 3s6-1.5 6-3v-4"/><path d="M22 10v6"/>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </span>
-        <h3>Certificado</h3><p>No deuda</p>
+        <h3>Registro</h3><p>Crea tu cuenta</p>
       </a>
     </div>
   </section>
 
-  <!-- Destacados (dinámico) -->
   <section>
     <div class="section-head">
       <h2>Libros <em>destacados</em></h2>
-      <p>Estantería clásica con detalle dorado (El Libro Total)</p>
+      <p><a href="catalogo.html" style="color:var(--blue);font-weight:700">Ver catálogo completo →</a></p>
     </div>
     <div id="destacados" class="grid-books"></div>
+  </section>
+
+  <section>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <div>
+        <h3 style="font-family:'Merriweather',serif;color:var(--navy)">Novedades v2.4</h3>
+        <p style="color:var(--muted);font-size:0.88rem">Auth JWT + bcrypt · Validación · mysql2/promise · Rate limit · Préstamos · Paginación · Orden · Subida portada · Toast & modal</p>
+      </div>
+      <a href="catalogo.html" class="btn-sm primary" style="padding:0.6rem 1.1rem">Explorar catálogo</a>
+    </div>
   </section>
 </main>
 
 <footer>
-  <p><strong>QNX Library</strong> v2.3 · Diseño clásico v2.2 + 24 libros · Inspirada en ellibrototal.com y bibliotecas.udec.cl</p>
+  <p><strong>QNX Library</strong> v2.4 · Auth + Préstamos + Catálogo avanzado · /api/health para estado DB</p>
 </footer>
 
 <script src="js/script.js"></script>
