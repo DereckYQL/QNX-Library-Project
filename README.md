@@ -1,145 +1,77 @@
-﻿# QNX Library Project
+﻿# QNX Library v2.5 - SQLite (DB Browser)
 
-Biblioteca virtual **Express + MySQL** - Colección digital QNX. **v2.4** incorpora auth real, préstamos y catálogo avanzado.
+Biblioteca virtual **Express + SQLite** - Colección digital QNX. **v2.5** migra de MySQL a **SQLite** (compatible **DB Browser for SQLite**), agrega usuarios seed **admin** (todos los permisos) y **visitante** con persistencia real.
 
-Repositorio: https://github.com/DereckYQL/QNX-Library-Project  
-Demo Pages: https://dereckyql.github.io/QNX-Library-Project/
+Repositorio: https://github.com/DereckYQL/QNX-Library-Project
 
-## Novedades v2.4 (vs v2.3)
+## Novedades v2.5 (vs v2.4 MySQL)
 
-- **Auth real:** `POST /api/auth/register` y `/api/auth/login` con `bcryptjs` + `JWT`, tabla `Usuarios` con `rol`, rate-limit `express-rate-limit` (20/15min), middleware que protege POST/PUT/DELETE y préstamos.
-- **Validación:** `titulo`/`autor` obligatorios, `anio` 1000-2100, `stock` 0-999, `genero` texto, `email` regex, `password` min 6.
-- **mysql2/promise + async/await:** pool `mysql2/promise`, `pool.query` con await, fallback en memoria si MySQL cae.
-- **Catálogo avanzado:** buscador por `?search=`, filtro `genero` y `disponible`, orden click en `<th>` (`sort`+`order`), paginación `?page&limit` (respuesta `{data,total,page,totalPages}`), `GET /api/libros/generos`.
-- **CRUD desde frontend:** botones Editar/Eliminar en tabla y grid, form crear/editar con subida de portada (`multer` → `/uploads` + `imagen_url`), modal confirmación delete, toast notificaciones, loading spinner.
-- **Detalle libro:** `libro.html?id=XX` y `GET /api/libros/:id` con stock/disponibilidad.
-- **Préstamos:** tabla `Prestamos` (FK usuario/libro, `fecha_prestamo`, `fecha_devolucion`, `estado`), `POST /api/prestamos`, `GET /api/prestamos/mis`, `PUT /api/prestamos/:id/devolver`, descuenta/restaura `stock` y `disponible`, botón "Prestar" en catálogo/detalle, vista `prestamos.html`.
-- **UX:** `toast` (success/error/info), `modal` delete, `loading` + `spinner`, manejo errores visible (alerts), responsive mejorado.
-- **.env:** agregado `JWT_SECRET` y `JWT_EXPIRES_IN`.
-- **24 libros** ahora con `disponible` + `stock` + `imagen_url` (3 agotados para probar préstamos).
+- **SQLite + DB Browser:** `better-sqlite3` + archivo `public/database/biblioteca.db` (WAL, FK ON). Abre directo con **DB Browser for SQLite**: Archivo > Abrir base de datos > `biblioteca.db`. Sin instalar MySQL.
+- **Usuarios seed persistidos:** al iniciar se crean si no existen:
+  - **Admin** `admin@qnx.local` / `Admin123!` → `rol=admin` (todos los permisos: CRUD libros, gestionar usuarios, ver todos los préstamos, subir portada)
+  - **Visitante** `visitante@qnx.local` / `visitante123` → `rol=visitante` (solo lectura + préstamos propios)
+- **Registro persistente:** `POST /api/auth/register` guarda en SQLite (nuevos usuarios quedan en `biblioteca.db`, rol por defecto `visitante`; solo admin con token puede crear otro admin vía `rol: admin`).
+- **Roles y permisos:** middleware `requireAdmin` protege `POST/PUT/DELETE /api/libros`, `POST /api/upload`, `GET /api/usuarios`, `DELETE /api/usuarios/:id`, `GET /api/prestamos` (global). Visitante solo puede `GET /api/libros`, `POST /api/prestamos` y `GET /api/prestamos/mis`.
+- **Gestión usuarios (admin):** `GET /api/usuarios` lista, `DELETE /api/usuarios/:id`, `PUT /api/usuarios/:id/rol`.
+- **BAT sin terminal bloqueada:** `Iniciar QNX Library v2.5.bat` lanza `node` en **segundo plano oculto** (`WindowStyle Hidden`). Cerrar la ventana **NO** tumba el localhost (queda `node.exe` oculto hasta apagar Windows). Se eliminó `Detener .bat` como pediste.
+- **24 libros** igual, con `disponible/stock/imagen_url` + índices, seed automático si tabla vacía.
 
-## Localhost - Cómo ejecutar
+## Cómo ejecutar (sin MySQL)
 
 ### Requisitos
-- Node.js 18+ (`node -v`) y npm
-- MySQL 9.7 (servicio `MySQL97` en `localhost:3306`) o XAMPP
+- Node.js 18+ y npm
+- **DB Browser for SQLite** opcional (para ver `biblioteca.db`): https://sqlitebrowser.org/
 
-### 1) Clonar y entrar
-```bash
-git clone https://github.com/DereckYQL/QNX-Library-Project.git
-cd QNX-Library-Project
-# si usas la carpeta suelta:
-cd "QNX-Library v2.4"
-```
+### 1) Abrir
+- Doble click en **`Iniciar QNX Library v2.5.bat`** (recomendado) → abre http://localhost:3000 en 4s y se cierra solo. El servidor queda oculto.
+- O manual: `npm install` → `npm start`
 
-### 2) Configurar .env
-```bash
-copy .env.example .env
-# edita JWT_SECRET si quieres (ya tiene uno por defecto para dev)
+### 2) .env (ya incluido)
 ```
-Contenido `.env`:
-```
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=root
-DB_NAME=biblioteca
-DB_PORT=3306
 SERVER_PORT=3000
+DB_PATH=public/database/biblioteca.db
 JWT_SECRET=qnx_library_secret_2026_cambia_en_produccion
 JWT_EXPIRES_IN=7d
 ```
 
-### 3) Instalar dependencias
-```bash
-npm install
-# instala express, mysql2, cors, dotenv, bcryptjs, jsonwebtoken, express-rate-limit, multer
-```
+### 3) Ver base de datos
+- Abre **DB Browser for SQLite** → Abrir `QNX-Library v2.5/public/database/biblioteca.db`
+- Tablas: `Libros` (24), `Usuarios` (admin+visitante + los que registres), `Prestamos`
+- Puedes editar/insertar/borrar y los cambios se reflejan al recargar el sitio (WAL).
 
-### 4) Inicializar base de datos (24 libros + nuevas tablas v2.4)
-```bash
-"C:\Program Files\MySQL\MySQL Server 9.7\bin\mysql.exe" -u root -proot biblioteca < public/database/schema.sql
-# o desde Workbench/phpMyAdmin -> importar public/database/schema.sql
-```
-Verifica:
-```bash
-"C:\Program Files\MySQL\MySQL Server 9.7\bin\mysql.exe" -u root -proot -e "USE biblioteca; SHOW TABLES; SELECT COUNT(*) FROM Libros; SELECT COUNT(*) FROM Usuarios; SHOW CREATE TABLE Prestamos;"
-# debe dar 24 libros, tablas Libros/Usuarios/Prestamos
-```
+### 4) Probar
+- http://localhost:3000 → Inicio
+- http://localhost:3000/catalogo.html → catálogo (filtros, paginación). **Solo admin ve form y botones Editar/Eliminar**
+- http://localhost:3000/api/health → `{ status:"ok", db:"sqlite", count:24, usuarios:2 }`
+- Login admin: `admin@qnx.local` / `Admin123!` → puede crear libros y ver `GET /api/usuarios`
+- Login visitante: `visitante@qnx.local` / `visitante123` → solo presta, si intenta crear libro recibe `403`
+- Registro: crea usuarios `visitante` persistidos en `biblioteca.db`
 
-### 5) Iniciar servidor
-```bash
-npm start
-# Servidor en http://localhost:3000
-# Conectado a MySQL (pool) o "fallback en memoria" si MySQL apagado
+### Para detener el servidor (como no hay Detener.bat)
+- Administrador de tareas → Procesos → `Node.js JavaScript Runtime` → Finalizar tarea, o reiniciar Windows, o `taskkill /F /IM node.exe` en CMD.
+
+## Estructura v2.5
 ```
-
-### 6) Probar
-- http://localhost:3000 -> Inicio v2.4
-- http://localhost:3000/catalogo.html -> buscador + filtros + paginación + ordenar + CRUD
-- http://localhost:3000/libro.html?id=1 -> detalle + prestar
-- http://localhost:3000/prestamos.html -> mis préstamos (requiere login)
-- http://localhost:3000/api/libros -> JSON (con paginación si usas ?page=1&limit=8)
-- http://localhost:3000/api/libros?search=garcia&genero=Novela&sort=anio&order=desc&page=1&limit=5
-- http://localhost:3000/api/health -> { status: "ok", db: "mysql" }
-
-> **Fallback:** Si MySQL no está disponible, `public/js/server.js` usa datos en memoria (24 libros + usuarios/préstamos en memoria). POST/PUT/DELETE y auth funcionan en modo fallback (sin persistencia).
-
-### Flujo auth + préstamos (curl)
-```bash
-# registro
-curl -X POST http://localhost:3000/api/auth/register -H "Content-Type: application/json" -d "{\"nombre\":\"Test\",\"email\":\"test@test.com\",\"password\":\"123456\"}"
-# login
-curl -X POST http://localhost:3000/api/auth/login -H "Content-Type: application/json" -d "{\"email\":\"test@test.com\",\"password\":\"123456\"}"
-# -> guarda token
-# prestar (con token)
-curl -X POST http://localhost:3000/api/prestamos -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d "{\"libro_id\":1}"
-# mis prestamos
-curl http://localhost:3000/api/prestamos/mis -H "Authorization: Bearer <TOKEN>"
-# devolver
-curl -X PUT http://localhost:3000/api/prestamos/1/devolver -H "Authorization: Bearer <TOKEN>"
-```
-
-## Estructura
-```
-public/
-  index.html          # Inicio + destacados
-  catalogo.html       # Catálogo avanzado (filtros, paginación, CRUD)
-  libro.html          # Detalle libro + prestar
-  prestamos.html      # Mis préstamos
-  login.html / registro.html  # Auth JWT
-  css/style.css       # Estilos + toast/modal/loading/pagination
-  js/
-    script.js         # Global: toast, auth nav, destacados, hero search
-    auth.js           # Login/registro fetch
-    catalogo.js       # Filtros, sort, paginación, CRUD, prestar, modal
-    libro.js          # Detalle + prestar
-    prestamos.js      # Listar/devolver préstamos
-    server.js         # Express + MySQL2/promise + JWT + Prestamos + Upload
-  database/schema.sql # 24 libros + Usuarios + Prestamos
-  uploads/            # Portadas subidas (multer)
-  img/logo.svg
+public/database/biblioteca.db  # SQLite real (DB Browser)
+public/database/schema.sql     # Schema SQLite de referencia
+public/js/server.js            # Express + better-sqlite3 + JWT + roles
+Iniciar QNX Library v2.5.bat   # Lanzador oculto (no bloquea terminal)
 ```
 
 ## Stack
-- Backend: `public/js/server.js` Express 4.19.2 + mysql2/promise 3.10.0 + cors + dotenv + bcryptjs + jsonwebtoken + express-rate-limit + multer
-- Frontend: HTML5/CSS3/JS vanilla (fetch + localStorage JWT)
-- DB: MySQL `Libros(id,titulo,autor,genero,anio,disponible,stock,imagen_url)` + `Usuarios(id,nombre,email,password,rol)` + `Prestamos(id,usuario_id,libro_id,fecha_prestamo,fecha_devolucion,estado)`
+- Backend: Express 4.19 + better-sqlite3 9.2 + bcryptjs + jsonwebtoken + express-rate-limit + multer
+- Frontend: HTML/CSS/JS (fetch + localStorage JWT + control rol admin)
+- DB: SQLite `Libros` + `Usuarios(rol admin/visitante)` + `Prestamos`
 
-## Versiones (tags)
-
+## Versiones
 | Tag | Descripción |
 |-----|-------------|
-| `v2.4.0` | **Auth JWT + Préstamos + Catálogo avanzado + Validación + mysql2/promise** |
-| `v2.3.0` | Clásico + 24 libros |
-| `v2.2.0` | Híbrido clásico #0B1C2B/dorado |
-| `v2.1.0` | Dark Neon |
-
-Ver `CHANGELOG.md` para detalle.
+| `v2.5.0` | SQLite + Admin/Visitante + DB Browser + BAT oculto |
+| `v2.4.0` | MySQL + Auth + Préstamos |
+| `v2.3.0` | 24 libros |
 
 ## Troubleshooting
-- `EADDRINUSE 3000`: `netstat -ano | findstr 3000` y matar proceso o cambiar `SERVER_PORT` en `.env`
-- `Access denied root@localhost`: password es `root` en MySQL97; revisa `my.ini`
-- `Unknown column disponible/stock`: re-importa `schema.sql` v2.4 (DROP + CREATE)
-- `Cannot find module bcryptjs/jsonwebtoken`: ejecuta `npm install` en la raíz donde está `package.json`
-- `Token invalido`: re-loguea; verifica `JWT_SECRET` coincide entre `.env` y servidor
-- `Solo imagenes permitidas` / `File too large`: multer limita a 3MB y solo `image/*`
+- `Cannot find module better-sqlite3`: ejecuta `npm install` (requiere compilación nativa, en Windows usa Node 18/20 con prebuild).
+- `403 Requiere rol admin` al crear libro → loguéate como admin@qnx.local
+- `biblioteca.db` bloqueada en DB Browser → cierra DB Browser o usa WAL (ya activo).
+- Puerto 3000 ocupado → el .bat mata instancia previa automáticamente.

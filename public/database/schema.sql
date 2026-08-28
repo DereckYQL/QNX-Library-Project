@@ -1,53 +1,50 @@
--- QNX Library v2.4 - Schema completo
-CREATE DATABASE IF NOT EXISTS biblioteca;
-USE biblioteca;
+-- QNX Library v2.5 - Schema SQLite (DB Browser for SQLite compatible)
+-- Abrir con DB Browser for SQLite: Archivo > Abrir base de datos > biblioteca.db
+-- Este archivo es solo referencia; la DB real se genera automaticamente al iniciar el servidor (public/database/biblioteca.db)
+-- Si quieres recrear manualmente: abre DB Browser y ejecuta este script.
 
--- Libros: con disponibilidad, stock e imagen
 CREATE TABLE IF NOT EXISTS Libros (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  titulo VARCHAR(255) NOT NULL,
-  autor VARCHAR(255) NOT NULL,
-  genero VARCHAR(100),
-  anio INT,
-  disponible TINYINT(1) NOT NULL DEFAULT 1,
-  stock INT NOT NULL DEFAULT 3,
-  imagen_url VARCHAR(500) DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_genero (genero),
-  INDEX idx_disponible (disponible)
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo TEXT NOT NULL,
+  autor TEXT NOT NULL,
+  genero TEXT,
+  anio INTEGER,
+  disponible INTEGER NOT NULL DEFAULT 1,
+  stock INTEGER NOT NULL DEFAULT 3,
+  imagen_url TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS Usuarios (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  rol ENUM('user','admin') NOT NULL DEFAULT 'user',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  rol TEXT NOT NULL DEFAULT 'visitante' CHECK(rol IN ('admin','visitante','user')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS Prestamos (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario_id INT NOT NULL,
-  libro_id INT NOT NULL,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  usuario_id INTEGER NOT NULL,
+  libro_id INTEGER NOT NULL,
   fecha_prestamo DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   fecha_devolucion DATE DEFAULT NULL,
   fecha_devuelto DATETIME DEFAULT NULL,
-  estado ENUM('activo','devuelto','vencido') NOT NULL DEFAULT 'activo',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  estado TEXT NOT NULL DEFAULT 'activo' CHECK(estado IN ('activo','devuelto','vencido')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (usuario_id) REFERENCES Usuarios(id) ON DELETE CASCADE,
-  FOREIGN KEY (libro_id) REFERENCES Libros(id) ON DELETE CASCADE,
-  INDEX idx_usuario (usuario_id),
-  INDEX idx_libro (libro_id),
-  INDEX idx_estado (estado)
+  FOREIGN KEY (libro_id) REFERENCES Libros(id) ON DELETE CASCADE
 );
 
--- Limpiar datos previos para re-import limpio
-DELETE FROM Prestamos;
-DELETE FROM Libros;
-ALTER TABLE Libros AUTO_INCREMENT = 1;
+CREATE INDEX IF NOT EXISTS idx_libros_genero ON Libros(genero);
+CREATE INDEX IF NOT EXISTS idx_libros_disponible ON Libros(disponible);
+CREATE INDEX IF NOT EXISTS idx_prestamos_usuario ON Prestamos(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_prestamos_libro ON Prestamos(libro_id);
 
+-- Datos de ejemplo: 24 libros (se insertan solo si la tabla esta vacia al iniciar el servidor)
+-- Para forzar reinsercion: DELETE FROM Libros; luego reinicia el servidor
 INSERT INTO Libros (titulo, autor, genero, anio, disponible, stock, imagen_url) VALUES
 ('Cien anos de soledad', 'Gabriel Garcia Marquez', 'Realismo magico', 1967, 1, 3, NULL),
 ('Don Quijote de la Mancha', 'Miguel de Cervantes', 'Clasico', 1605, 1, 2, NULL),
@@ -74,6 +71,9 @@ INSERT INTO Libros (titulo, autor, genero, anio, disponible, stock, imagen_url) 
 ('Los juegos del hambre', 'Suzanne Collins', 'Distopia', 2008, 1, 3, NULL),
 ('El psicoanalista', 'John Katzenbach', 'Thriller', 2002, 1, 2, NULL);
 
--- Usuario admin de prueba (password: admin123 - hash bcrypt 10 rounds)
--- Se inserta via API /api/auth/register; este es solo ejemplo si quieres insertar manual:
+-- Usuarios seed (passwords hasheadas con bcrypt 10; se crean automaticamente al iniciar si no existen)
+-- admin@qnx.local / Admin123!  (rol admin, todos los permisos: CRUD libros, gestionar usuarios, ver todos los prestamos)
+-- visitante@qnx.local / visitante123 (rol visitante, solo lectura y prestamos propios)
+-- Puedes agregar mas usuarios via Registro (rol por defecto visitante, persistido en biblioteca.db) o via /api/auth/register
 -- INSERT INTO Usuarios (nombre, email, password, rol) VALUES ('Admin QNX', 'admin@qnx.local', '$2a$10$...hash...', 'admin');
+-- INSERT INTO Usuarios (nombre, email, password, rol) VALUES ('Visitante Demo', 'visitante@qnx.local', '$2a$10$...hash...', 'visitante');

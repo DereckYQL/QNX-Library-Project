@@ -1,7 +1,7 @@
-﻿{
+{
   "name": "qnx-library",
-  "version": "2.4.0",
-  "description": "QNX Library v2.4 - Auth JWT + Prestamos + Validacion + Catalogo avanzado (Express + MySQL2/promise)",
+  "version": "2.5.0",
+  "description": "QNX Library v2.5 - SQLite + Auth JWT + Admin/Visitante + Prestamos (DB Browser SQLite)",
   "main": "public/js/server.js",
   "scripts": {
     "start": "node public/js/server.js",
@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "express": "^4.19.2",
-    "mysql2": "^3.10.0",
+    "sqlite3": "^5.1.7",
+    "sqlite": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "bcryptjs": "^2.4.3",

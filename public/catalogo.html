@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QNX Library - Catálogo v2.4</title>
+  <title>QNX Library - Catálogo v2.5</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
     <div class="brand-logo">
       <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 14 A46 46 0 1 0 92 92 L102 108 L86 101 L74 90 A46 46 0 0 0 60 14 Z M60 26 A34 34 0 1 1 66 80 A34 34 0 0 1 60 26 Z" fill="#0B1C2B"/><g transform="translate(30 52)"><path d="M5 8 L27 2.5 L27 28.5 L5 33.2 Z" fill="#C9A86A"/><path d="M33 2.5 L55 8 L55 33.2 L33 28.5 Z" fill="#fff"/></g><path d="M68 80 L86 86 L84 103 L77 97 L70 103 Z" fill="#C9A86A"/></svg>
     </div>
-    <span><strong>QNX Library</strong><small>Catálogo v2.4</small></span>
+    <span><strong>QNX Library</strong><small>Catálogo v2.5 SQLite</small></span>
   </a>
   <nav>
     <a href="index.html">Inicio</a>
@@ -72,7 +72,7 @@
   <section>
     <div class="section-head">
       <h2 id="formTitle">Agregar libro</h2>
-      <p>Requiere iniciar sesión (JWT). Validación en backend + frontend.</p>
+      <p>Solo <strong>admin</strong> puede crear/editar/eliminar (SQLite). Visitante solo presta. <span id="adminHint" style="color:#c0392b"></span></p>
     </div>
     <form id="formLibro" class="form-box wide" style="margin:0;max-width:none">
       <input type="hidden" id="libroId">
@@ -114,7 +114,7 @@
         <button type="submit" style="flex:1">Guardar libro</button>
         <button type="button" id="btnCancelarEdit" class="btn-sm" style="width:auto;padding:0.8rem 1.1rem">Cancelar</button>
       </div>
-      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">* Campos obligatorios. POST/PUT requieren token. Usa el filtro y ordena clickeando cabeceras.</p>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">* Campos obligatorios. Requiere login admin (admin@qnx.local / Admin123!). Visitante no puede guardar.</p>
     </form>
   </section>
 </main>
@@ -131,7 +131,7 @@
   </div>
 </div>
 
-<footer><p><strong>QNX Library</strong> v2.4 · Catálogo avanzado — paginación, orden, filtros, CRUD + préstamos</p></footer>
+<footer><p><strong>QNX Library</strong> v2.5 · SQLite + Roles admin/visitante — CRUD solo admin</p></footer>
 <script src="js/script.js"></script>
 <script src="js/catalogo.js"></script>
 </body>

@@ -2,8 +2,20 @@
 let estado = { page:1, limit:8, search:'', genero:'', disponible:'', sort:'id', order:'asc', total:0, totalPages:1 };
 let librosCache = [];
 
+function getUserRole(){ try{ const u=JSON.parse(localStorage.getItem('qnx_user')||'null'); return u?.rol||null; }catch{ return null; } }
+function isAdmin(){ return getUserRole()==='admin'; }
+
 document.addEventListener('DOMContentLoaded', ()=>{
   if(typeof updateNav==='function') updateNav();
+  // ocultar form si no es admin (v2.5 SQLite permisos)
+  const formSection = document.getElementById('formLibro')?.closest('section');
+  if(formSection){
+    if(!isAdmin()){
+      formSection.style.display='none';
+    } else {
+      formSection.style.display='';
+    }
+  }
   const urlParams = new URLSearchParams(location.search);
   if(urlParams.get('q')) estado.search = urlParams.get('q');
 
@@ -63,8 +75,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // form libro (crear/editar)
   if(els.form){
+    // si no es admin, bloquear submit
+    if(!isAdmin()){
+      els.form.querySelector('button[type="submit"]').disabled=true;
+      els.form.querySelector('button[type="submit"]').title='Solo admin puede agregar/editar';
+    }
     els.form.addEventListener('submit', async (e)=>{
       e.preventDefault();
+      if(!isAdmin()) return toast('Solo admin puede gestionar libros','error');
       const id = document.getElementById('libroId').value;
       const data = {
         titulo: document.getElementById('fTitulo').value.trim(),
@@ -161,7 +179,7 @@ function renderTabla(libros){
     tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.2rem">Sin resultados</td></tr>`;
     return;
   }
-  const logged = !!localStorage.getItem('qnx_token');
+  const admin = isAdmin();
   tbody.innerHTML = libros.map(l=>`
     <tr>
       <td>${l.id}</td>
@@ -172,7 +190,7 @@ function renderTabla(libros){
       <td><span class="pill ${l.disponible?'pill-ok':'pill-no'}">${l.disponible? 'Disponible ('+ (l.stock??0)+')':'Agotado'}</span></td>
       <td class="actions">
         <button class="btn-sm" onclick="prestar(${l.id})" ${!l.disponible?'disabled':''}>Prestar</button>
-        ${logged? `<button class="btn-sm" onclick="editar(${l.id})">Editar</button><button class="btn-sm danger" onclick="confirmDelete(${l.id})">Eliminar</button>`:''}
+        ${admin? `<button class="btn-sm" onclick="editar(${l.id})">Editar</button><button class="btn-sm danger" onclick="confirmDelete(${l.id})">Eliminar</button>`:''}
       </td>
     </tr>
   `).join('');
@@ -239,6 +257,7 @@ async function prestar(id){
 }
 
 function editar(id){
+  if(!isAdmin()) return toast('Solo admin puede editar','error');
   const l=librosCache.find(x=>x.id===id);
   if(!l) return;
   document.getElementById('libroId').value=l.id;
@@ -254,6 +273,7 @@ function editar(id){
 
 let deleteId=null;
 function confirmDelete(id){
+  if(!isAdmin()) return toast('Solo admin puede eliminar','error');
   deleteId=id;
   document.getElementById('modalConfirm').classList.add('show');
   document.getElementById('modalMsg').textContent='¿Eliminar libro #'+id+'? Esta acción no se puede deshacer.';
