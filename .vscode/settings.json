@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    "**/.gitignore": true,
+    "**/.env.example": true,
+    "**/.env": true,
+    "**/package-lock.json": true,
+    "**/CHANGELOG.md": true,
+    "**/node_modules": true
+  }
+}
