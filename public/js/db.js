@@ -49,14 +49,15 @@ function _now() { return new Date().toISOString(); }
 
 function initDB() {
   const existing = _load();
-  // Force re-seed if admin hash is outdated
   if (existing) {
+    // Force re-seed if admin hash is outdated
     const admin = existing.usuarios && existing.usuarios.find(u => u.email === 'admin@qnx.local');
-    if (admin && admin.password_hash !== HASH_ADMIN) {
-      localStorage.removeItem(DB_KEY);
-    } else {
-      return;
-    }
+    const visitante = existing.usuarios && existing.usuarios.find(u => u.email === 'visitante@qnx.local');
+    const hashesOk = admin && admin.password_hash === HASH_ADMIN &&
+                     visitante && visitante.password_hash === HASH_VISITANTE;
+    if (hashesOk) return; // already up to date
+    // Hashes outdated — wipe and re-seed
+    localStorage.removeItem(DB_KEY);
   }
   const db = {
     libros: SEED_LIBROS.map(l => ({ ...l, created_at: _now(), updated_at: _now() })),
