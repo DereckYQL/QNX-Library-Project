@@ -4,8 +4,8 @@
 const DB_KEY = 'qnx_db';
 
 // Pre-computed SHA-256 hashes
-const HASH_ADMIN    = '0a041b9462caa4a31bac3567e0b6e6fd9100787db2ab433d96f6d178cabfce90';
-const HASH_VISITANTE = 'ee6b9e3e29d77bf46e4fa6e2888e840c8e55ab7c3fe1db3d7745e68b74c1f52b';
+const HASH_ADMIN    = '3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121';
+const HASH_VISITANTE = '68ec8208692da824e2e99a22252e1e85e382d9850fc5c5aff9950f9c1e140c90';
 
 const SEED_LIBROS = [
   { id:1,  titulo:'Cien años de soledad',               autor:'Gabriel García Márquez',   genero:'Realismo mágico',    anio:1967, disponible:1, stock:3, imagen_url:null },
@@ -48,7 +48,16 @@ function _save(db) {
 function _now() { return new Date().toISOString(); }
 
 function initDB() {
-  if (_load()) return; // already initialised
+  const existing = _load();
+  // Force re-seed if admin hash is outdated
+  if (existing) {
+    const admin = existing.usuarios && existing.usuarios.find(u => u.email === 'admin@qnx.local');
+    if (admin && admin.password_hash !== HASH_ADMIN) {
+      localStorage.removeItem(DB_KEY);
+    } else {
+      return;
+    }
+  }
   const db = {
     libros: SEED_LIBROS.map(l => ({ ...l, created_at: _now(), updated_at: _now() })),
     usuarios: SEED_USUARIOS,
