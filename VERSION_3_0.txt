@@ -1,0 +1,73 @@
+QNX LIBRARY 3.0.0 - MEJORAS Y CRITERIOS MINIMOS
+Fecha: 2026-11-03
+
+VERSION
+package.json, lockfile, interfaz, API y changelog actualizados a 3.0.0 / v3.0.
+Publicacion prevista: rama master, etiqueta y release v3.0.0.
+
+MEJORAS IMPLEMENTADAS
+1. CI: instalacion limpia, runtime, esquema, regresiones, Chromium, npm audit
+   y Gitleaks; Dependabot para npm y Actions con revision semanal.
+2. Arquitectura documentada: servidor compartido y catalogo estatico de solo
+   lectura. Variables, migraciones, inicializacion, despliegue y mantenimiento
+   descritos en README y docs/OPERACION.md.
+3. Secretos: escaneo del arbol y del historial, .env/DB/backups excluidos de Git,
+   secretos conocidos rechazados y SECURITY.md para reportes privados.
+4. Operacion: headers y CORS restringidos, HTTPS mediante plantilla Caddy,
+   HSTS en solicitudes seguras, logs JSON sin credenciales, request_id,
+   lock de instancia y cierre ordenado. Plantillas systemd para reinicio
+   ante fallas y backup diario; no se activan servicios en este equipo.
+5. Integridad: migraciones SQL con SHA-256 como fuente de verdad, esquema
+   generado, transacciones y triggers para stock entero/no negativo y
+   disponibilidad coherente. Vencimiento calculado por fecha UTC al consultar.
+6. Experiencia: pagina reajustada tras archivar su ultimo libro, generos
+   actualizados sin filtros obsoletos, navegacion reactiva y fechas verificadas
+   desde America/Santiago. Los libros archivados conservan historial legible.
+7. Recuperacion: snapshot consistente de SQLite y portadas referenciadas,
+   manifest SHA-256, verificacion SQLite/FK, backup previo al reemplazo,
+   rechazo de servidor activo y restore a destino temporal con epoca de
+   sesion nueva para invalidar JWT anteriores.
+
+CRITERIOS MINIMOS - RESULTADO LOCAL
+[APROBADO] Ningun archivo privado accesible por HTTP: regresiones de rutas de
+           SQLite, WAL/SHM, backups, .env, codigo privado y portadas no publicadas.
+[APROBADO] Sin usuarios ni secretos predeterminados habilitados: rechazo de
+           defaults, alta administrativa explicita y retiro de passwords demo.
+[APROBADO] Roles y bajas invalidan permisos inmediatamente: usuario actual,
+           auth_version, baja logica y pruebas de tokens obsoletos.
+[APROBADO] Concurrencia sin stock negativo ni devoluciones duplicadas:
+           ultima copia, duplicados, doble devolucion y rollback comprobados.
+[APROBADO] Entradas invalidas producen errores controlados sin caidas:
+           tipos, JSON, multipart, archivos y verificacion de health posterior.
+[APROBADO] Datos coherentes en dos navegadores: flujo real en Chromium de
+           registro/login, alta/edicion/archivo, prestamo y devolucion.
+[APROBADO] Restauracion y regresiones: backup con WAL y portadas restaurado,
+           hashes/integridad comprobados, tokens previos invalidados.
+
+EVIDENCIA
+- Suite automatizada: 22 pruebas aprobadas tras las nuevas migraciones.
+- Prueba Chromium: flujo compartido, CSP/XSS, datos locales heredados, fechas
+  de Chile, ultima pagina y refresco de generos aprobados.
+- Backup de la base real restaurado en un destino independiente: las filas
+  de usuarios, libros y prestamos coinciden; no se reemplazo la base original.
+- Datos reales conservados en esa comprobacion: 2 usuarios, 24 libros, 0 prestamos.
+- Gitleaks 8.30.1: arbol de trabajo e historial completo de 19 commits sin hallazgos
+  en el analisis previo a la publicacion. Los defaults retirados se excluyen de
+  forma exacta; no se excluyen pruebas o todo el historial.
+- npm audit: 0 vulnerabilidades conocidas en todos los niveles.
+- Esquema generado y checksums de migraciones verificados.
+
+PUBLICACION Y LIMITES
+No se publican .env, SQLite, backups, portadas privadas ni node_modules.
+La publicacion del codigo no despliega una biblioteca con los datos privados.
+Las plantillas de infraestructura deben adaptarse e instalarse en el servidor
+que el operador elija, con dominio y almacenamiento de backups propios.
+Los archivos de versiones antiguas pueden permanecer en el historial Git; no
+se reescribe ni fuerza el historial como parte de esta version.
+Los informes de las fases critica/alta/media son evidencia historica: los
+nombres de rutas y el numero de pruebas pueden corresponder a fases anteriores.
+
+CIERRE LOCAL
+22 pruebas aprobadas; Chromium y los siete criterios minimos aprobados.
+Backup real restaurado y datos conservados. Auditoria npm: 0 avisos.
+Gitleaks: sin hallazgos en archivos publicables y 19 commits historicos.

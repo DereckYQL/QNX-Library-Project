@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: http:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QNX Library v2.5</title>
+  <title>QNX Library v3.0</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -32,8 +33,8 @@
 
 <section class="hero">
   <h1>Biblioteca <em>clásica</em> y digital</h1>
-  <p>Colección QNX v2.5 · SQLite + Auth JWT · Roles Admin/Visitante · Préstamos</p>
-  <form class="searchbar" onsubmit="event.preventDefault();">
+  <p>Colección QNX v3.0 · SQLite + Auth JWT · Roles Admin/Visitante · Préstamos</p>
+  <form class="searchbar">
     <input type="search" placeholder="¿Qué buscas hoy? Título, autor o género...">
     <button type="submit">Buscar</button>
   </form>
@@ -84,7 +85,7 @@
   <section>
     <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:space-between">
       <div>
-        <h3 style="font-family:'Merriweather',serif;color:var(--navy)">Novedades v2.5</h3>
+        <h3 style="font-family:'Merriweather',serif;color:var(--navy)">Novedades v3.0</h3>
         <p style="color:var(--muted);font-size:0.88rem">SQLite + Auth JWT · Roles Admin/Visitante · Préstamos · Gestión usuarios · Rate limit · Subida portada · Toast & modal</p>
       </div>
       <a href="pages/catalogo.html" class="btn-sm primary" style="padding:0.6rem 1.1rem">Explorar catálogo</a>
@@ -93,11 +94,12 @@
 </main>
 
 <footer>
-  <p><strong>QNX Library</strong> v2.5 · SQLite + Auth JWT · Roles Admin/Visitante · /api/health para estado DB</p>
+  <p><strong>QNX Library</strong> v3.0 · SQLite + Auth JWT · Roles Admin/Visitante · /api/health para estado DB</p>
 </footer>
 
-<script src="js/crypto-utils.js"></script>
+<script src="js/runtime-config.js"></script>
 <script src="js/db.js"></script>
+<script src="js/data-api.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>

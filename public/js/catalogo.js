@@ -1,13 +1,13 @@
-// catalogo.js — static version (localStorage)
+// catalogo.js — QNX Library API / read-only static catalogue
 let estado = { page: 1, limit: 8, search: '', genero: '', disponible: '', sort: 'id', order: 'asc', total: 0, totalPages: 1 };
 let librosCache = [];
 
-function getUserRole() { try { const u = JSON.parse(localStorage.getItem('qnx_user') || 'null'); return u?.rol || null; } catch { return null; } }
-function isAdmin() { return getUserRole() === 'admin'; }
+function getUserRole() { return getUser()?.rol || null; }
+function isAdmin() { return QNX.mode === 'server' && getUserRole() === 'admin'; }
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof updateNav === 'function') updateNav();
-  if (typeof initDB === 'function') initDB();
+document.addEventListener('DOMContentLoaded', async () => {
+  try { await QNX.ready; } catch (error) { toast(error.message, 'error'); return; }
+  updateNav();
 
   const formSection = document.getElementById('formLibro')?.closest('section');
   if (formSection) {
@@ -90,22 +90,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const btn = els.form.querySelector('button[type="submit"]');
       btn.disabled = true;
       try {
-        // File upload not supported in static mode — only URL accepted
         const fileInput = document.getElementById('fPortada');
-        if (fileInput && fileInput.files[0]) {
-          toast('Subida de archivo no disponible en modo estático. Usa una URL de imagen.', 'info');
-        }
-        if (id) {
-          updateLibro(id, data);
-          toast('Libro actualizado', 'success');
-        } else {
-          createLibro(data);
-          toast('Libro creado', 'success');
-        }
+        if (fileInput?.files[0]) data.imagen_url = (await QNX.upload(fileInput.files[0])).url;
+        await QNX.saveBook(id, data);
+        toast(id ? 'Libro actualizado' : 'Libro creado', 'success');
         els.form.reset();
         document.getElementById('libroId').value = '';
         document.getElementById('formTitle').textContent = 'Agregar libro';
-        cargar();
+        await cargarGeneros();
+        await cargar();
       } catch (err) { toast(err.message, 'error'); }
       finally { btn.disabled = false; }
     });
@@ -117,30 +110,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-function cargarGeneros() {
+async function cargarGeneros() {
   try {
-    const gens = getGeneros();
+    const gens = await QNX.genres();
+    if (estado.genero && !gens.includes(estado.genero)) { estado.genero = ''; estado.page = 1; }
     const sel = document.getElementById('filtroGenero');
     const fSel = document.getElementById('fGeneroList');
     if (sel && Array.isArray(gens)) {
+      sel.querySelectorAll('option:not(:first-child)').forEach(option => option.remove());
       gens.forEach(g => {
         const o = document.createElement('option'); o.value = g; o.textContent = g; sel.appendChild(o);
       });
     }
+    if (sel) sel.value = estado.genero;
     if (fSel && Array.isArray(gens)) {
+      fSel.replaceChildren();
       gens.forEach(g => {
         const o = document.createElement('option'); o.value = g; o.textContent = g; fSel.appendChild(o);
       });
     }
-  } catch {}
+  } catch (error) { toast('No se pudieron actualizar los generos', 'error'); }
 }
 
-function cargar() {
+let loadVersion = 0;
+async function cargar() {
+  const version = ++loadVersion;
   const loading = document.getElementById('loadingBox');
   const tbody = document.querySelector('#tablaLibros tbody');
   if (loading) loading.style.display = 'flex';
   try {
-    const json = getLibros({
+    const json = await QNX.books({
       search: estado.search,
       genero: estado.genero,
       disponible: estado.disponible,
@@ -149,6 +148,8 @@ function cargar() {
       sort: estado.sort,
       order: estado.order
     });
+    if (version !== loadVersion) return;
+    if (estado.page > json.totalPages) { estado.page = json.totalPages; return cargar(); }
     const data = json.data || [];
     const total = json.total || 0;
     estado.total = total;
@@ -160,69 +161,45 @@ function cargar() {
     document.getElementById('countInfo').textContent = `${total} libro(s)`;
   } catch (err) {
     console.error(err);
-    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#991b1b">Error cargando</td></tr>`;
+    if (tbody) tbody.replaceChildren(element('tr', {}, element('td', { colspan: 7 }, 'Error cargando')));
     toast('Error al cargar libros', 'error');
-  } finally { if (loading) loading.style.display = 'none'; }
+  } finally { if (loading && version === loadVersion) loading.style.display = 'none'; }
 }
 
 function renderTabla(libros) {
   const tbody = document.querySelector('#tablaLibros tbody');
   if (!tbody) return;
-  if (!libros.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.2rem">Sin resultados</td></tr>`;
-    return;
-  }
-  const admin = isAdmin();
-  tbody.innerHTML = libros.map(l => `
-    <tr>
-      <td>${l.id}</td>
-      <td><a href="libro.html?id=${l.id}" style="color:var(--blue);font-weight:700">${l.titulo}</a></td>
-      <td>${l.autor}</td>
-      <td>${l.genero || ''}</td>
-      <td>${l.anio || ''}</td>
-      <td><span class="pill ${l.disponible ? 'pill-ok' : 'pill-no'}">${l.disponible ? 'Disponible (' + (l.stock ?? 0) + ')' : 'Agotado'}</span></td>
-      <td class="actions">
-        <button class="btn-sm" onclick="prestar(${l.id})" ${!l.disponible ? 'disabled' : ''}>Prestar</button>
-        ${admin ? `<button class="btn-sm" onclick="editar(${l.id})">Editar</button><button class="btn-sm danger" onclick="confirmDelete(${l.id})">Eliminar</button>` : ''}
-      </td>
-    </tr>
-  `).join('');
+  if (!libros.length) { tbody.replaceChildren(element('tr', {}, element('td', { colspan: 7 }, 'Sin resultados'))); return; }
+  tbody.replaceChildren(...libros.map(book => {
+    const actions = element('td', { className: 'actions' },
+      actionButton('Prestar', () => prestar(book.id), { disabled: !book.disponible || QNX.mode !== 'server', 'data-action': 'borrow' }));
+    if (isAdmin()) actions.append(
+      actionButton('Editar', () => editar(book.id), { 'data-action': 'edit' }),
+      actionButton('Archivar', () => confirmDelete(book.id), { className: 'btn-sm danger', 'data-action': 'archive' }));
+    return element('tr', {}, element('td', {}, book.id),
+      element('td', {}, element('a', { href: bookHref(book.id) }, book.titulo || '')),
+      element('td', {}, book.autor || ''), element('td', {}, book.genero || ''), element('td', {}, book.anio || ''),
+      element('td', {}, element('span', { className: 'pill ' + (book.disponible ? 'pill-ok' : 'pill-no') }, book.disponible ? `Disponible (${book.stock ?? 0})` : 'Agotado')), actions);
+  }));
 }
-
 function renderGrid(libros) {
   const grid = document.getElementById('gridLibros');
   if (!grid) return;
-  if (!libros.length) { grid.innerHTML = '<p style="color:var(--muted)">Sin libros</p>'; return; }
-  grid.innerHTML = libros.map((l, i) => `
-    <div class="book">
-      <div class="book-top ${i % 2 === 1 ? 'gold' : ''}">${l.imagen_url ? `<img src="${l.imagen_url}" alt="">` : l.titulo}
-        <span class="badge-disponible ${l.disponible ? 'badge-ok' : 'badge-no'}">${l.disponible ? 'Disponible' : 'Agotado'}</span>
-      </div>
-      <div class="book-body">
-        <h3><a href="libro.html?id=${l.id}">${l.titulo}</a></h3>
-        <p>${l.autor} · ${l.anio || ''}</p>
-        <span class="tag">${l.genero || ''}</span>
-        <div class="book-actions">
-          <a href="libro.html?id=${l.id}" class="btn-sm">Ver</a>
-          <button class="btn-sm primary" onclick="prestar(${l.id})" ${!l.disponible ? 'disabled' : ''}>Prestar</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  grid.replaceChildren(...(libros.length ? libros.map((book, index) => bookCard(book, index, '', prestar)) : [element('p', {}, 'Sin libros')]));
 }
 
 function renderPaginacion(total) {
   const pag = document.getElementById('paginacion');
   const info = document.getElementById('pageInfo');
   if (!pag) return;
-  pag.innerHTML = '';
+  pag.replaceChildren();
   const totalPages = estado.totalPages;
   if (info) info.textContent = `Página ${estado.page} de ${totalPages} — ${total} total`;
   const mkBtn = (label, page, disabled = false, active = false) => {
     const b = document.createElement('button');
     b.className = 'page-btn' + (active ? ' active' : '');
     b.textContent = label; b.disabled = disabled;
-    b.onclick = () => { estado.page = page; cargar(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    b.addEventListener('click', () => { estado.page = page; cargar(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     return b;
   };
   pag.appendChild(mkBtn('‹', Math.max(1, estado.page - 1), estado.page === 1));
@@ -238,9 +215,10 @@ function renderPaginacion(total) {
 
 async function prestar(id) {
   const user = getUser();
+  if (QNX.mode !== 'server') return toast('Los prestamos requieren el servidor', 'info');
   if (!user) { toast('Inicia sesión para prestar', 'error'); location.href = 'login.html'; return; }
   try {
-    const p = createPrestamo(user.id, id);
+    const p = await QNX.borrow(id);
     toast('¡Préstamo registrado! Devolución: ' + p.fecha_devolucion, 'success');
     cargar();
   } catch (err) { toast(err.message, 'error'); }
@@ -266,18 +244,20 @@ function confirmDelete(id) {
   if (!isAdmin()) return toast('Solo admin puede eliminar', 'error');
   deleteId = id;
   document.getElementById('modalConfirm').classList.add('show');
-  document.getElementById('modalMsg').textContent = '¿Eliminar libro #' + id + '? Esta acción no se puede deshacer.';
+  document.getElementById('modalBackdrop').classList.add('show');
+  document.getElementById('modalMsg').textContent = '¿Archivar libro #' + id + '? Se conservara su historial.';
 }
-function closeModal() { document.getElementById('modalConfirm').classList.remove('show'); deleteId = null; }
+function closeModal() { document.getElementById('modalBackdrop').classList.remove('show'); document.getElementById('modalConfirm').classList.remove('show'); deleteId = null; }
 document.getElementById('modalCancel')?.addEventListener('click', closeModal);
 document.getElementById('modalBackdrop')?.addEventListener('click', (e) => { if (e.target.id === 'modalBackdrop') closeModal(); });
-document.getElementById('modalConfirmBtn')?.addEventListener('click', () => {
+document.getElementById('modalConfirmBtn')?.addEventListener('click', async () => {
   if (deleteId == null) return;
   if (!getToken()) return toast('No autorizado', 'error');
   try {
-    deleteLibro(deleteId);
-    toast('Libro eliminado', 'success');
+    await QNX.deleteBook(deleteId);
+    toast('Libro archivado', 'success');
     closeModal();
-    cargar();
+    await cargarGeneros();
+    await cargar();
   } catch (err) { toast(err.message, 'error'); }
 });

@@ -1,21 +1,36 @@
 {
   "name": "qnx-library",
-  "version": "2.5.0",
-  "description": "QNX Library v2.5 - SQLite + Auth JWT + Admin/Visitante + Prestamos (DB Browser SQLite)",
+  "version": "3.0.0",
+  "description": "QNX Library 3.0 - Biblioteca con API segura, SQLite privado y catalogo estatico",
   "main": "public/js/server.js",
   "scripts": {
     "start": "node public/js/server.js",
-    "dev": "node public/js/server.js"
+    "dev": "node public/js/server.js",
+    "create-admin": "node scripts/create-admin.js",
+    "test": "node --test tests/*.test.js",
+    "test:browser": "node tests/browser-smoke.cjs",
+    "check:runtime": "node scripts/check-runtime.js",
+    "cleanup-uploads": "node scripts/cleanup-uploads.js",
+    "schema:check": "node scripts/schema.js",
+    "schema:write": "node scripts/schema.js --write",
+    "backup": "node scripts/backup.js",
+    "restore": "node scripts/restore.js",
+    "test:minimum": "npm run check:runtime && npm run schema:check && npm test && npm run test:browser",
+    "scan:secrets": "bash scripts/scan-secrets.sh"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "sqlite3": "^5.1.7",
-    "sqlite": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
+    "express": "^4.22.3",
     "express-rate-limit": "^7.4.1",
-    "multer": "^1.4.5-lts.1"
+    "jsonwebtoken": "^9.0.2",
+    "multer": "2.5.0",
+    "sharp": "0.35.5",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=22.9.0"
   }
 }

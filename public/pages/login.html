@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: http:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QNX Library - Login v2.4</title>
+  <title>QNX Library - Login v3.0</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -34,13 +35,14 @@
     <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
     <button type="submit">Entrar</button>
     <p class="form-foot">¿No tienes cuenta? <a href="registro.html">Regístrate</a></p>
-    <p style="text-align:center;margin-top:0.6rem;font-size:0.75rem;color:var(--muted)">Rate limit: 20 intentos / 15 min</p>
+    <p style="text-align:center;margin-top:0.6rem;font-size:0.75rem;color:var(--muted)">30 intentos de autenticacion / 15 min</p>
   </form>
 </main>
 
-<footer><p><strong>QNX Library</strong> v2.4 · Login funcional</p></footer>
-<script src="../js/crypto-utils.js"></script>
+<footer><p><strong>QNX Library</strong> v3.0 · Login funcional</p></footer>
+<script src="../js/runtime-config.js"></script>
 <script src="../js/db.js"></script>
+<script src="../js/data-api.js"></script>
 <script src="../js/script.js"></script>
 <script src="../js/auth.js"></script>
 </body>

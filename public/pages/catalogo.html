@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: http:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QNX Library - Catálogo v2.5</title>
+  <title>QNX Library - Catálogo v3.0</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -13,7 +14,7 @@
     <div class="brand-logo">
       <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 14 A46 46 0 1 0 92 92 L102 108 L86 101 L74 90 A46 46 0 0 0 60 14 Z M60 26 A34 34 0 1 1 66 80 A34 34 0 0 1 60 26 Z" fill="#0B1C2B"/><g transform="translate(30 52)"><path d="M5 8 L27 2.5 L27 28.5 L5 33.2 Z" fill="#C9A86A"/><path d="M33 2.5 L55 8 L55 33.2 L33 28.5 Z" fill="#fff"/></g><path d="M68 80 L86 86 L84 103 L77 97 L70 103 Z" fill="#C9A86A"/></svg>
     </div>
-    <span><strong>QNX Library</strong><small>Catálogo v2.5</small></span>
+    <span><strong>QNX Library</strong><small>Catálogo v3.0</small></span>
   </a>
   <nav>
     <a href="../index.html">Inicio</a>
@@ -69,10 +70,10 @@
     <div id="gridLibros" class="grid-books" style="margin-top:1.5rem"></div>
   </section>
 
-  <section>
+  <section style="display:none">
     <div class="section-head">
       <h2 id="formTitle">Agregar libro</h2>
-      <p>Solo <strong>admin</strong> puede crear/editar/eliminar (localStorage). Visitante solo presta. <span id="adminHint" style="color:#c0392b"></span></p>
+      <p>Solo <strong>admin</strong> puede crear/editar/eliminar (servidor). Visitante solo presta. <span id="adminHint" style="color:#c0392b"></span></p>
     </div>
     <form id="formLibro" class="form-box wide" style="margin:0;max-width:none">
       <input type="hidden" id="libroId">
@@ -114,7 +115,7 @@
         <button type="submit" style="flex:1">Guardar libro</button>
         <button type="button" id="btnCancelarEdit" class="btn-sm" style="width:auto;padding:0.8rem 1.1rem">Cancelar</button>
       </div>
-      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">* Campos obligatorios. Requiere login admin (admin@qnx.local / Admin123!). Visitante no puede guardar.</p>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">* Campos obligatorios. Requiere una cuenta administradora del servidor. Visitante no puede guardar.</p>
     </form>
   </section>
 </main>
@@ -122,18 +123,19 @@
 <!-- Modal confirmar borrado -->
 <div id="modalBackdrop" class="modal-backdrop">
   <div id="modalConfirm" class="modal">
-    <h3>Confirmar eliminación</h3>
-    <p id="modalMsg">¿Eliminar este libro?</p>
+    <h3>Archivar libro</h3>
+    <p id="modalMsg">¿Archivar este libro?</p>
     <div class="modal-actions">
       <button id="modalCancel" class="cancel">Cancelar</button>
-      <button id="modalConfirmBtn" class="confirm">Eliminar</button>
+      <button id="modalConfirmBtn" class="confirm">Archivar</button>
     </div>
   </div>
 </div>
 
-<footer><p><strong>QNX Library</strong> v2.5 · localStorage + Roles admin/visitante — CRUD solo admin</p></footer>
-<script src="../js/crypto-utils.js"></script>
+<footer><p><strong>QNX Library</strong> v3.0 · Catalogo y prestamos — CRUD solo admin</p></footer>
+<script src="../js/runtime-config.js"></script>
 <script src="../js/db.js"></script>
+<script src="../js/data-api.js"></script>
 <script src="../js/script.js"></script>
 <script src="../js/catalogo.js"></script>
 </body>

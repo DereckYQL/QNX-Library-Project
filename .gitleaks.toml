@@ -1,0 +1,7 @@
+title = "QNX Library secret detection"
+[extend]
+useDefault = true
+[[allowlists]]
+description = "Retired development defaults explicitly rejected by the application"
+regexTarget = "secret"
+regexes = ['''^qnx_dev_secret$''', '''^cambia_este_secreto_super_seguro_qnx_2026$''']

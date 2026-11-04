@@ -1,0 +1,279 @@
+INFORME DE REVISION - QNX LIBRARY
+Fecha: 3 de noviembre de 2026
+Repositorio: https://github.com/DereckYQL/QNX-Library-Project
+Commit revisado: 71303fca64c6b2ca8df33bb3c97bf96a54ae937e
+
+ALCANCE Y EVIDENCIA
+Se revisaron el codigo local, la estructura del repositorio, el esquema y una
+copia de la base SQLite, las dependencias declaradas y el commit de GitHub.
+La copia local y la rama master consultada coincidian en el commit indicado.
+Las severidades son una valoracion contextual, no puntuaciones CVSS.
+No se realizaron cambios en el codigo ni pruebas contra un despliegue publico.
+
+Se confirmo mediante ejecucion aislada el borrado de datos del modo estatico.
+No se pudieron ejecutar las pruebas HTTP: el modulo nativo sqlite3 instalado
+falla con "invalid ELF header". Las conclusiones sobre endpoints proceden de
+inspeccion del codigo y requieren validacion de integracion tras reparar el
+entorno. npm audit no pudo consultar el registro por un error DNS (EAI_AGAIN);
+la revision de dependencias no es exhaustiva.
+
+======================================================================
+NIVEL CRITICO
+======================================================================
+
+C-01. BASE SQLITE DENTRO DEL DIRECTORIO PUBLICO
+Ubicacion: public/js/server.js:15 y :27; public/database/biblioteca.db.
+Problema: Express publica public completo y la ruta predeterminada de SQLite
+esta dentro de ese directorio. Con esa configuracion, la base puede servirse
+sin autenticacion en /database/biblioteca.db. La base tambien esta versionada
+en el repositorio publico. La copia examinada contiene 2 usuarios, 24 libros
+y 0 prestamos. El codigo WAL puede hacer que una descarga no refleje todos los
+cambios recientes, pero no elimina la exposicion del archivo.
+Impacto: divulgacion de correos, hashes de contrasenas y datos persistidos.
+Mejora: mover SQLite a un directorio privado fuera de public, excluir bases,
+backups y archivos WAL/SHM de Git y limitar los recursos publicados.
+Recomendacion: revisar datos historicamente publicados y rotar credenciales
+si alguna instalacion uso cuentas reales en una base accesible.
+Verificacion: GET /database/biblioteca.db debe devolver 404/403 sin entregar
+contenido SQLite; confirmar tambien que no se publican backups o archivos WAL.
+
+C-02. CUENTA ADMINISTRADORA CON CONTRASENA PREDETERMINADA
+Ubicacion: public/js/server.js:104-114; README.md.
+Problema: el inicio crea admin@qnx.local con Admin123! si no existe. Eliminar
+esa cuenta no es una solucion persistente: reaparece al reiniciar.
+Impacto: acceso administrativo a instalaciones con las credenciales demo.
+Mejora: crear usuarios demo unicamente bajo una opcion explicita de desarrollo.
+Recomendacion: usar un procedimiento inicial de alta de administrador con una
+contrasena segura; no imprimir contrasenas en logs ni recrearlas en produccion.
+Verificacion: una instalacion de produccion no debe aceptar credenciales demo
+ni restaurar automaticamente cuentas eliminadas.
+
+======================================================================
+NIVEL ALTO
+======================================================================
+
+A-01. SECRETO JWT PREDETERMINADO CONOCIDO
+Ubicacion: public/js/server.js:21.
+Problema: cuando falta JWT_SECRET, se utiliza qnx_dev_secret.
+Impacto: en esa configuracion se pueden fabricar tokens con rol administrador.
+Mejora: rechazar el arranque si el secreto falta o no cumple requisitos.
+Recomendacion: generar un secreto aleatorio, almacenarlo fuera de Git y rotar
+sesiones de cualquier instalacion que haya utilizado el valor predeterminado.
+
+A-02. AUTORIZACION DEL MODO ESTATICO CONTROLADA POR EL CLIENTE
+Ubicacion: public/js/auth.js:41-43; public/js/catalogo.js:5-6;
+public/js/db.js:110, :172 y :208.
+Problema: identidad y rol se guardan en localStorage; el token es static-ID.
+Las funciones locales de modificacion no constituyen una frontera de seguridad.
+Impacto: cualquier persona con acceso a ese navegador puede alterar roles,
+usuarios, catalogo y prestamos locales. Esto no demuestra acceso al backend.
+Mejora: realizar autenticacion y autorizacion en el servidor para uso compartido.
+Recomendacion: identificar el modo estatico como demostracion local, evitar
+contrasenas reales y no prometer aislamiento entre usuarios en ese modo.
+
+A-03. BORRADO AUTOMATICO DE DATOS LOCALES - CONFIRMADO
+Ubicacion: public/js/db.js:50-68.
+Problema: initDB elimina toda la base si faltan las cuentas demo o sus hashes
+no coinciden con los esperados.
+Prueba ejecutada: inicializar, crear un libro personalizado, eliminar el usuario
+demo visitante e inicializar otra vez. Resultado: el libro desaparece y se
+restauran los dos usuarios iniciales.
+Impacto: perdida de catalogo, usuarios y prestamos locales.
+Mejora: sustituir el reinicio destructivo por migraciones de esquema versionadas.
+Recomendacion: ofrecer exportacion/importacion y restauracion manual explicita
+con aviso de borrado; nunca borrar datos por cambios en las cuentas demo.
+
+A-04. CONDICIONES DE CARRERA Y FALTA DE ATOMICIDAD EN INVENTARIO
+Ubicacion: public/js/server.js:301-316 y :323-331.
+Problema: lectura, comprobacion, insercion de prestamo y descuento de stock son
+operaciones separadas. La devolucion tambien comprueba y actualiza por separado.
+Impacto: solicitudes concurrentes pueden duplicar prestamos, producir stock
+negativo o incrementar existencias varias veces por una sola devolucion.
+Una falla intermedia tambien puede dejar prestamo y stock desincronizados.
+Mejora: usar transacciones con aislamiento adecuado y actualizaciones
+condicionales; verificar filas afectadas; agregar CHECK(stock >= 0) y un indice
+unico parcial para impedir prestamos activos duplicados por usuario/libro.
+Recomendacion: probar concurrencia y rollback, incluida la doble devolucion.
+
+A-05. ENTRADAS MALFORMADAS Y ERRORES ASINCRONOS SIN MANEJO
+Ubicacion: public/js/server.js:138-143, :170-198 y handlers async restantes.
+Problema: se llama trim() sin validar tipos. Por ejemplo, nombre: 123 produce
+TypeError. Los handlers async de Express 4 no incorporan captura uniforme.
+Impacto: solicitudes pueden quedar sin respuesta o terminar el proceso por
+rechazos no manejados, segun la configuracion y version de Node.
+Mejora: validar esquemas y tipos; envolver handlers async para pasar errores a
+next(); agregar middleware central de errores sin filtrar detalles internos.
+Recomendacion: probar valores null, numeros, objetos y arrays; devolver 400 en
+lugar de excepciones y esperar que SQLite este listo antes de aceptar trafico.
+
+A-06. PERMISOS OBSOLETOS EN TOKENS JWT
+Ubicacion: public/js/server.js:146-154, :212-227.
+Problema: se confia en el rol del JWT sin comprobar el estado actual del usuario.
+Eliminar una cuenta o reducir su rol no invalida su token anterior.
+Impacto: un token administrativo puede conservar privilegios hasta expirar;
+el valor predeterminado de expiracion es de siete dias.
+Mejora: verificar usuario activo y permisos actuales o versionar/revocar sesiones.
+Recomendacion: probar que eliminacion y cambio de rol tengan efecto inmediato.
+
+A-07. MULTER CON VULNERABILIDAD CONOCIDA
+Ubicacion: package-lock.json: multer 1.4.5-lts.2;
+public/js/server.js:295.
+Problema: la version esta incluida en el rango afectado por CVE-2025-47944,
+que permite provocar una excepcion no manejada mediante multipart malformado.
+En este proyecto el endpoint requiere administrador, lo que reduce la exposicion.
+Fuente oficial:
+https://github.com/expressjs/multer/security/advisories/GHSA-4pg4-qvpc-4q3h
+Mejora: actualizar a una version mantenida, comprobando todos los avisos vigentes
+y compatibilidad antes de fijar la version; regenerar el lockfile.
+Recomendacion: ejecutar auditoria completa cuando el registro este disponible
+y probar solicitudes multipart invalidas sin provocar caidas del servidor.
+
+A-08. FRONTEND Y BACKEND NO COMPARTEN EL ESTADO - FUNCIONAL
+Ubicacion: public/js/auth.js:35-43; public/js/catalogo.js:143;
+public/js/libro.js:37; public/js/prestamos.js:18 y :51.
+Problema: aunque se ejecute npm start, la interfaz utiliza funciones locales de
+localStorage y no los endpoints de autenticacion/catalogo/prestamos de SQLite.
+Impacto: datos y stock no se comparten entre dispositivos; las operaciones de
+la interfaz no representan el estado del backend.
+Mejora: definir explicitamente el modo de ejecucion y conectar el modo servidor
+a la API mediante una capa de acceso a datos coherente.
+Recomendacion: verificar un flujo completo entre dos navegadores independientes
+para registro, login, prestamo, consulta y devolucion.
+
+======================================================================
+NIVEL MEDIO
+======================================================================
+
+M-01. DATOS INTERPOLADOS EN INNERHTML SIN ESCAPE
+Ubicacion: public/js/catalogo.js:176-211; public/js/script.js:80-91;
+public/js/libro.js:14-32; public/js/prestamos.js:23-41.
+Problema: titulos, autores, generos y URLs se insertan como HTML sin escape.
+Impacto: un valor manipulado puede ejecutar JavaScript al renderizarse. La
+persistencia actual del frontend es local, por lo que no se demostro un ataque
+entre usuarios remotos. Conectar esos renderizadores a datos compartidos sin
+corregirlos ampliaria el alcance.
+Mejora: usar textContent y creacion de nodos; validar protocolos y URLs de imagen.
+Recomendacion: probar etiquetas y atributos maliciosos y definir una CSP como
+defensa adicional tras retirar los handlers inline.
+
+M-02. ELIMINACIONES INCONSISTENTES CON PRESTAMOS PENDIENTES
+Ubicacion: public/js/server.js:65-66, :212-218 y :288-293;
+public/js/db.js:153-158 y :200-205.
+Problema: en SQLite, borrar un usuario elimina sus prestamos por CASCADE sin
+reponer el stock descontado. Borrar libros elimina su historial. En el modo
+estatico, borrar usuarios o libros deja prestamos huerfanos.
+Impacto: inventario incorrecto y perdida de trazabilidad.
+Mejora: bloquear eliminaciones con prestamos pendientes y usar bajas logicas.
+Recomendacion: definir una politica de conservacion de historial y probar las
+operaciones con prestamos activos, devueltos y vencidos.
+
+M-03. VALIDACION INSUFICIENTE DE ARCHIVOS SUBIDOS
+Ubicacion: public/js/server.js:156-165 y :295-297.
+Problema: se confia en el MIME declarado por el cliente y se conserva la
+extension original. No se comprueba el contenido real; se admiten SVG y otros
+archivos presentados como imagen que pueden servirse desde el mismo origen.
+Impacto: alojamiento de contenido activo o archivos que no sean imagenes.
+La subida requiere administrador; no se demostro una explotacion remota.
+Mejora: aceptar formatos raster concretos, comprobar firmas y decodificar y
+recodificar imagenes; generar extensiones desde el formato verificado.
+Recomendacion: servir archivos desde un origen separado cuando corresponda,
+configurar nosniff y limpiar archivos sin referencias.
+
+M-04. HASH DE CONTRASENAS LOCAL RAPIDO Y SIN SAL
+Ubicacion: public/js/crypto-utils.js:2-4; public/js/db.js:172-192.
+Problema: las contrasenas locales se almacenan como SHA-256 sin sal.
+Impacto: quien obtenga localStorage puede probar contrasenas fuera de linea
+rapidamente. La propia autenticacion local tampoco impide modificar usuarios.
+Mejora: para usuarios reales, migrar la autenticacion al servidor y utilizar una
+funcion de derivacion de contrasenas con parametros adecuados.
+Recomendacion: evitar reutilizacion de contrasenas reales en la demostracion.
+
+M-05. ENTORNO LOCAL NO REPRODUCIBLE
+Ubicacion: node_modules/sqlite3/build/Release/node_sqlite3.node; package.json.
+Problema confirmado: require('sqlite3') falla con "invalid ELF header" y el
+backend no arranca en este entorno. Esto describe la instalacion local, no
+prueba que el codigo falle en todos los equipos.
+Mejora: documentar una version de Node compatible y reinstalar dependencias
+nativas en la plataforma destino mediante una instalacion limpia.
+Recomendacion: verificar npm ci y el inicio desde un clon limpio en CI; no
+copiar node_modules entre sistemas. La reparacion no se ejecuto en esta revision.
+
+======================================================================
+MEJORAS DEL PROYECTO Y REPOSITORIO
+======================================================================
+
+1. Pruebas y CI
+No hay scripts de pruebas ni workflows de GitHub Actions versionados.
+Agregar pruebas de integracion para roles, revocacion de sesiones, entradas
+malformadas, concurrencia, rollback y proteccion de archivos privados.
+Ejecutar instalacion limpia y pruebas en cada pull request.
+
+2. Documentacion y arquitectura
+Separar instrucciones de demostracion estatica y despliegue con servidor.
+Documentar variables de entorno, inicializacion, migraciones, backups y
+restauracion. Aclarar las capacidades reales de cada modo.
+
+3. Gestion de dependencias y secretos
+Automatizar avisos de dependencias y analisis de secretos mediante las
+capacidades disponibles de GitHub. Revisar cambios del lockfile y no aplicar
+actualizaciones mayores sin comprobar compatibilidad.
+.env esta ignorado y no aparece entre los archivos versionados actuales;
+esto no equivale a una auditoria exhaustiva de secretos en todo el historial.
+
+4. Seguridad HTTP y operacion
+Restringir CORS a los origenes necesarios, configurar cabeceras de seguridad y
+usar HTTPS en despliegues. Evitar exponer rutas internas en /api/health.
+Usar logs estructurados sin credenciales y un mecanismo de recuperacion del
+proceso, sin sustituir el manejo correcto de errores.
+
+5. Integridad y mantenimiento
+Mantener migraciones SQL como fuente de verdad para evitar divergencias entre
+schema.sql y el esquema creado en server.js. Derivar disponibilidad del stock o
+hacer cumplir su relacion para evitar valores contradictorios.
+Definir como se calcula y devuelve el estado vencido; actualmente se admite
+en el esquema pero no se observa un mecanismo que lo actualice automaticamente.
+
+6. Experiencia de usuario
+Ajustar la pagina actual cuando una eliminacion deje vacia la ultima pagina.
+Actualizar filtros de genero despues de cambios en el catalogo.
+Revisar fechas de devolucion: interpretar YYYY-MM-DD como UTC puede mostrar el
+dia anterior en zonas horarias negativas; manejar fechas de calendario sin
+conversion accidental de zona horaria.
+Revisar navegacion tras login/logout: updateNav se bloquea con dataset.bound,
+por lo que una segunda llamada no actualiza el estado hasta recargar.
+
+======================================================================
+ORDEN RECOMENDADO DE IMPLEMENTACION
+======================================================================
+
+Fase 1 - Contencion
+- Sacar SQLite y backups del directorio publico y del contenido distribuido.
+- Eliminar credenciales demo de produccion y exigir secreto JWT seguro.
+- Corregir autorizacion y revocacion de sesiones.
+
+Fase 2 - Integridad y disponibilidad
+- Sustituir el reinicio destructivo local por migraciones.
+- Hacer atomicos prestamos/devoluciones y proteger el stock.
+- Validar entradas y manejar errores asincronos.
+- Actualizar Multer y reparar la instalacion local de SQLite.
+
+Fase 3 - Funcionamiento compartido
+- Conectar frontend y API con un modo de ejecucion explicito.
+- Corregir renderizado HTML y subida de archivos antes de compartir datos.
+- Definir eliminaciones, historial y bajas logicas.
+
+Fase 4 - Prevencion
+- Incorporar pruebas de regresion y CI.
+- Automatizar revision de dependencias y secretos.
+- Documentar despliegue, migraciones y recuperacion de backups.
+
+CRITERIOS MINIMOS ANTES DE USAR DATOS REALES
+- Ningun archivo de datos privado accesible por HTTP.
+- Sin cuentas ni secretos predeterminados habilitados.
+- Cambios de rol y bajas invalidan permisos inmediatamente.
+- Pruebas concurrentes sin stock negativo ni devoluciones duplicadas.
+- Entradas invalidas devuelven errores controlados sin caer el proceso.
+- Datos coherentes entre dos navegadores en modo servidor.
+- Restauracion de backup comprobada y pruebas de regresion aprobadas.
+
+FIN DEL INFORME

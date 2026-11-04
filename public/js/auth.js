@@ -1,11 +1,19 @@
-// auth.js — static version (localStorage, no server)
-document.addEventListener('DOMContentLoaded', () => {
-  // Always init DB first
-  if (typeof initDB === 'function') initDB();
+// auth.js — QNX Library API / read-only static catalogue
+document.addEventListener('DOMContentLoaded', async () => {
+  try { await QNX.ready; } catch (error) { toast(error.message, 'error'); return; }
   if (typeof updateNav === 'function') updateNav();
 
   const loginForm    = document.getElementById('loginForm');
   const registroForm = document.getElementById('registroForm');
+  if (QNX.mode !== 'server') {
+    for (const form of [loginForm, registroForm].filter(Boolean)) {
+      showAlert(form, 'Las cuentas requieren el servidor de QNX Library. Este despliegue es un catalogo de demostracion.', 'info');
+      form.querySelector('button[type="submit"]').disabled = true;
+      form.addEventListener('submit', event => event.preventDefault());
+    }
+    return;
+  }
+
 
   function showAlert(form, msg, type = 'error') {
     let el = form.querySelector('.alert');
@@ -32,15 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         if (!email || !password) throw new Error('Email y contraseña requeridos');
 
-        const user = getUsuario(email);
-        if (!user) throw new Error('Credenciales inválidas');
-
-        const ok = await validatePassword(password, user.password_hash);
-        if (!ok) throw new Error('Credenciales inválidas');
-
-        const sesion = { id: user.id, nombre: user.nombre, email: user.email, rol: user.rol };
-        localStorage.setItem('qnx_user', JSON.stringify(sesion));
-        localStorage.setItem('qnx_token', 'static-' + user.id);
+        const user = await QNX.login({ email, password });
 
         if (typeof toast === 'function') toast('Bienvenido ' + user.nombre, 'success');
         showAlert(loginForm, 'Acceso correcto, redirigiendo...', 'success');
@@ -72,13 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
           throw new Error('Nombre requerido (mín. 2 caracteres)');
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
           throw new Error('Email inválido');
-        if (!password || password.length < 6)
-          throw new Error('Contraseña mínimo 6 caracteres');
+        if (!password || password.length < 12)
+          throw new Error('Contraseña mínimo 12 caracteres');
 
-        const user = await createUsuario({ nombre, email, password });
-        const sesion = { id: user.id, nombre: user.nombre, email: user.email, rol: user.rol };
-        localStorage.setItem('qnx_user', JSON.stringify(sesion));
-        localStorage.setItem('qnx_token', 'static-' + user.id);
+        await QNX.register({ nombre, email, password });
 
         if (typeof toast === 'function') toast('Cuenta creada', 'success');
         showAlert(registroForm, 'Cuenta creada, redirigiendo...', 'success');

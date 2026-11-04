@@ -1,0 +1,14 @@
+[Unit]
+Description=Verified backup of QNX Library
+[Service]
+Type=oneshot
+User=qnx
+Group=qnx
+WorkingDirectory=/opt/qnx-library
+EnvironmentFile=/opt/qnx-library/.env
+ExecStart=/usr/bin/node scripts/backup.js
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/qnx-library/data

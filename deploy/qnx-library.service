@@ -1,0 +1,26 @@
+[Unit]
+Description=QNX Library 3.0 API
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+[Service]
+Type=simple
+User=qnx
+Group=qnx
+WorkingDirectory=/opt/qnx-library
+EnvironmentFile=/opt/qnx-library/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node public/js/server.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/qnx-library/data
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=multi-user.target

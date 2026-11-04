@@ -1,4 +1,4 @@
-// script.js — QNX Library static version (localStorage)
+// script.js — QNX Library API / read-only static catalogue
 
 // Toast
 function toast(msg, type = 'info', ms = 3200) {
@@ -12,32 +12,67 @@ function toast(msg, type = 'info', ms = 3200) {
 }
 
 // Auth helpers
-function getToken() { return localStorage.getItem('qnx_token'); }
-function getUser() { try { return JSON.parse(localStorage.getItem('qnx_user') || 'null'); } catch { return null; } }
-function isLogged() { return !!getToken(); }
+function getToken() { return QNX.token(); }
+function getUser() { return QNX.getUser(); }
+function isLogged() { return !!getUser(); }
 function logout() {
-  localStorage.removeItem('qnx_token');
-  localStorage.removeItem('qnx_user');
-  toast('Sesión cerrada', 'info');
-  updateNav();
-  setTimeout(() => location.href = location.pathname.includes('/pages/') ? '../index.html' : 'index.html', 600);
+  QNX.logout(); updateNav();
+  location.href = location.pathname.includes('/pages/') ? '../index.html' : 'index.html';
 }
-function authHeaders() {
-  return { 'Content-Type': 'application/json' };
+// All user data becomes text nodes or individual, validated DOM properties.
+function element(tag, attributes = {}, ...children) {
+  const result = document.createElement(tag);
+  for (const [key, value] of Object.entries(attributes)) {
+    if (key === 'className') result.className = value;
+    else if (key === 'disabled') result.disabled = !!value;
+    else result.setAttribute(key, String(value));
+  }
+  for (const child of children.flat()) {
+    if (child !== null && child !== undefined) result.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+  }
+  return result;
 }
+function actionButton(label, action, options = {}) {
+  const button = element('button', { type: 'button', className: 'btn-sm', ...options }, label);
+  button.addEventListener('click', action);
+  return button;
+}
+function safeImage(value) {
+  if (!value) return '';
+  try { const url = new URL(value, location.href); return ['http:', 'https:'].includes(url.protocol) ? url.href : ''; } catch { return ''; }
+}
+function bookHref(id, prefix = '') { return prefix + 'libro.html?id=' + encodeURIComponent(String(id)); }
+function cover(book, className) {
+  const box = element('div', { className });
+  const url = safeImage(book.imagen_url);
+  box.appendChild(url ? element('img', { src: url, alt: book.titulo || '', loading: 'lazy', referrerpolicy: 'no-referrer' }) : document.createTextNode(String(book.titulo || '')));
+  return box;
+}
+function bookCard(book, index, prefix = '', borrow = null) {
+  const top = cover(book, 'book-top' + (index % 2 ? ' gold' : ''));
+  top.appendChild(element('span', { className: 'badge-disponible ' + (book.disponible ? 'badge-ok' : 'badge-no') }, book.disponible ? 'Disponible' : 'Agotado'));
+  const body = element('div', { className: 'book-body' },
+    element('h3', {}, element('a', { href: bookHref(book.id, prefix) }, book.titulo || '')),
+    element('p', {}, `${book.autor || ''} · ${book.anio || ''}`),
+    element('span', { className: 'tag' }, book.genero || 'General'));
+  if (borrow) body.appendChild(element('div', { className: 'book-actions' },
+    element('a', { href: bookHref(book.id, prefix), className: 'btn-sm' }, 'Ver'),
+    actionButton('Prestar', () => borrow(book.id), { className: 'btn-sm primary', disabled: !book.disponible || QNX.mode !== 'server', 'data-action': 'borrow' })));
+  return element('div', { className: 'book' }, top, body);
+}
+function utcDate(value) { return value ? new Date(/[zZ]|[+-]\d\d:\d\d$/.test(value) ? value : value.replace(' ', 'T') + 'Z').toLocaleDateString() : '-'; }
+function calendarDate(value) { return value ? new Date(value + 'T12:00:00').toLocaleDateString() : '-'; }
 
 function updateNav() {
   const nav = document.querySelector('header nav');
   if (!nav) return;
-  if (nav.dataset.bound === '1') return;
-  nav.dataset.bound = '1';
   const user = getUser();
   const links = nav.querySelectorAll('a');
   const existingPrestamos = nav.querySelector('a[href="prestamos.html"], a[href="pages/prestamos.html"]');
   const existingLogout = nav.querySelector('#btnLogout');
   if (user) {
     links.forEach(a => {
-      if (a.getAttribute('href') === 'login.html' || a.getAttribute('href') === 'registro.html') a.style.display = 'none';
+      if (/(?:^|\/)(login|registro)\.html$/.test(a.getAttribute('href') || '')) a.style.display = 'none';
     });
     if (!existingPrestamos) {
       const a = document.createElement('a');
@@ -53,12 +88,12 @@ function updateNav() {
       nav.appendChild(span);
       const btn = document.createElement('button');
       btn.id = 'btnLogout'; btn.className = 'btn-logout'; btn.textContent = 'Salir';
-      btn.onclick = logout;
+      btn.addEventListener('click', logout);
       nav.appendChild(btn);
     }
   } else {
     links.forEach(a => {
-      if (a.getAttribute('href') === 'login.html' || a.getAttribute('href') === 'registro.html') a.style.display = '';
+      if (/(?:^|\/)(login|registro)\.html$/.test(a.getAttribute('href') || '')) a.style.display = '';
     });
     if (existingPrestamos) existingPrestamos.remove();
     if (existingLogout) existingLogout.remove();
@@ -71,36 +106,26 @@ function updateNav() {
 async function cargarLibros() {
   const destacados = document.getElementById('destacados');
   if (!destacados) return;
-  destacados.innerHTML = '<p class="loading"><span class="spinner"></span> Cargando libros...</p>';
+  destacados.replaceChildren(element('p', { className: 'loading' }, element('span', { className: 'spinner' }), ' Cargando libros...'));
   try {
-    if (typeof initDB === 'function') initDB();
-    const result = getLibros({ limit: 8 });
+    const result = await QNX.books({ limit: 8 });
     const libros = result.data || result;
     if (!Array.isArray(libros) || libros.length === 0) throw new Error('sin datos');
-    destacados.innerHTML = libros.map((l, i) => `
-      <a class="book" href="pages/libro.html?id=${l.id}">
-        <div class="book-top ${i % 2 === 1 ? 'gold' : ''}">${l.imagen_url ? `<img src="${l.imagen_url}" alt="${l.titulo}">` : l.titulo}
-          <span class="badge-disponible ${l.disponible ? 'badge-ok' : 'badge-no'}">${l.disponible ? 'Disponible' : 'No disponible'}</span>
-        </div>
-        <div class="book-body">
-          <h3>${l.titulo}</h3>
-          <p>${l.autor} · ${l.anio || ''}</p>
-          <span class="tag">${l.genero || 'General'}</span>
-        </div>
-      </a>
-    `).join('');
+    destacados.replaceChildren(...libros.map((book, index) => bookCard(book, index, 'pages/')));
   } catch (err) {
     console.error(err);
-    destacados.innerHTML = `
-      <div class="book"><div class="book-top">Cien años de soledad</div><div class="book-body"><h3>Cien años de soledad</h3><p>García Márquez · 1967</p><span class="tag">Realismo mágico</span></div></div>
-      <div class="book"><div class="book-top gold">Don Quijote</div><div class="book-body"><h3>Don Quijote</h3><p>Cervantes · 1605</p><span class="tag">Clásico</span></div></div>
-      <div class="book"><div class="book-top">El principito</div><div class="book-body"><h3>El principito</h3><p>Saint-Exupéry · 1943</p><span class="tag">Ficción</span></div></div>`;
-    toast('Usando datos de respaldo', 'info');
+    destacados.textContent = 'No se pudo cargar el catalogo. Vuelve a intentar.';
+    toast('No se pudo conectar con los datos de la biblioteca', 'error');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof initDB === 'function') initDB();
+document.addEventListener('DOMContentLoaded', async () => {
+  try { await QNX.ready; } catch (error) { toast(error.message, 'error'); }
+  if (QNX.mode === 'static') {
+    const notice = document.createElement('p'); notice.className = 'alert info show';
+    notice.textContent = 'Catalogo de demostracion. Inicia el servidor para usar cuentas, prestamos y administracion. Tus datos locales anteriores se conservan.';
+    document.querySelector('main')?.prepend(notice);
+  }
   updateNav();
   cargarLibros();
   const heroForm = document.querySelector('.hero .searchbar');
@@ -111,4 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
       location.href = 'pages/catalogo.html' + (q ? '?q=' + encodeURIComponent(q) : '');
     });
   }
+});
+
+window.addEventListener('qnx-session-changed', () => {
+  updateNav();
+  const management = document.getElementById('formLibro')?.closest('section');
+  if (management) management.style.display = getUser()?.rol === 'admin' && QNX.mode === 'server' ? '' : 'none';
 });

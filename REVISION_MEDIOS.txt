@@ -1,0 +1,101 @@
+CORRECCIONES DE NIVEL MEDIO - QNX LIBRARY
+Fecha: 2026-11-03
+Referencia: INFORME_AUDITORIA_QNX_LIBRARY.txt, hallazgos M-01 a M-05.
+
+M-01 - HTML SIN ESCAPE / XSS
+Se completaron las correcciones iniciadas en la fase alta. Los datos de libros,
+portadas y prestamos se construyen con nodos DOM y textContent; ya no hay
+innerHTML ni handlers inline en la interfaz. Los botones usan addEventListener.
+Las URLs de imagen solo aceptan HTTP/HTTPS y los IDs se codifican al crear enlaces.
+Se aplica Content-Security-Policy en Express y como meta en el HTML estatico:
+JavaScript del mismo origen, sin scripts ni eventos inline, sin objetos ni base
+externa. Se conservan estilos inline existentes; no se habilita JavaScript inline.
+Se probaron un titulo HTML malicioso, el detalle, el catalogo, los prestamos,
+la creacion/edicion y la ejecucion bloqueada de scripts/eventos inyectados.
+Tambien se corrigio la visibilidad del fondo del modal de archivado.
+
+M-02 - ELIMINACIONES E HISTORIAL
+La API usa bajas logicas: deleted_at en libros y usuarios. Un prestamo activo o
+vencido bloquea la baja con 409. Tras devolverlo, se permite archivar el libro o
+desactivar al usuario, preservando filas e historial. La cuenta desactivada pierde
+sus sesiones, queda excluida de listados y no puede iniciar sesion. Los libros
+archivados salen del catalogo, de generos y de nuevas operaciones de prestamo.
+El historial sigue mostrando sus datos y los identifica como archivados, sin
+crear un enlace de detalle que responderia 404. No se reutilizan correos ni se
+purgan registros automaticamente.
+Triggers SQLite impiden el DELETE fisico de usuarios/libros con prestamos,
+evita que ON DELETE CASCADE destruya el historial por una operacion SQL directa.
+Se verificaron los estados activo, vencido y devuelto, el stock y la revocacion.
+Las migraciones agregan columnas y triggers sin borrar los datos anteriores.
+
+M-03 - PORTADAS SUBIDAS
+Se sustituyo la verificacion de firma superficial por decodificacion real con
+Sharp 0.35.5 y una nueva codificacion WebP. Se admiten PNG/JPEG/WebP/GIF no animado,
+hasta 3 MiB, 16 megapixeles y 12000 pixeles por lado. La salida se limita a
+1600 x 2400 pixeles, sin metadatos ni contenido anexado. Los errores de formato,
+archivos truncados, SVG y dimensiones excesivas se rechazan con 400.
+Los archivos se guardan fuera de public, en uploads junto a SQLite; se sirven
+solo con nombres generados, tipo image/webp, nosniff y CSP. El MIME y la extension
+enviados por el cliente no determinan el contenido publicado.
+Se incorporo cleanup-uploads: dry-run por defecto; --apply es una accion manual
+que debe ejecutarse con el servidor detenido. Solo selecciona archivos generados,
+huerfanos y con mas de 24 horas. Conserva portadas de libros archivados, recientes
+y enlaces simbolicos. Solo se ejecuto el borrado en un directorio de prueba.
+El antiguo public/uploads no se sirve; archivos de otras instalaciones deben
+subirse de nuevo para recodificarlos, conservando primero los originales. Antes
+de aplicar se comprobara si existen archivos heredados en este proyecto.
+Referencia tecnica: https://sharp.pixelplumbing.com/api-constructor/
+Referencia salida: https://sharp.pixelplumbing.com/api-output/
+
+M-04 - CONTRASENAS SHA-256 LOCALES
+La autenticacion ya se traslado al servidor en la fase alta. Se retiro ahora
+public/js/crypto-utils.js y su publicacion por Express. No hay creacion ni
+validacion de contrasenas en el modo estatico, que es de solo lectura.
+Las cuentas reales utilizan bcrypt con sal y coste 12; se verifica que dos
+cuentas con la misma contrasena reciban hashes distintos y que los hashes no
+se incluyan en las respuestas de registro.
+Los datos historicos del navegador se conservan para recuperacion; los hashes
+antiguos no se usan para autenticar ni se importan automaticamente al servidor.
+
+M-05 - ENTORNO NO REPRODUCIBLE
+Se verifico npm ci desde cero en un directorio temporal, sin copiar node_modules.
+Se fijo Node 26.12.0 en .node-version y se incorporo npm run check:runtime para
+comprobar la version de Node, una consulta SQLite en memoria y la codificacion
+y decodificacion nativas de una imagen WebP.
+Se agrego .github/workflows/ci.yml con instalacion limpia, check:runtime, pruebas
+y npm audit. El workflow tiene permisos de solo lectura y no conserva credenciales
+de checkout. Se validan los pasos localmente; no se afirma una ejecucion de GitHub
+Actions, porque los cambios aun no se publicaron.
+Se documentaron la instalacion, dependencias nativas y operaciones de mantenimiento.
+
+LIMITES
+- Estas correcciones resuelven los hallazgos medios enumerados; el informe inicial
+  conserva su valor historico y sus referencias de linea pueden haber cambiado.
+- La recodificacion no equivale a un antivirus. Mantener Sharp y sus codecs al dia.
+- La politica de archivo conserva historial; una eventual politica de retencion,
+  restauracion o purga definitiva requiere una decision operativa independiente.
+- El historial remoto con bases antiguas no se reescribio. No hay commit ni push.
+- No se borran archivos ni cuentas reales en las pruebas. Antes de la migracion
+  se crea un respaldo privado consistente de SQLite y de los archivos reemplazados.
+
+Verificacion completada; resultados al final de este archivo.
+
+BACKUP PRIVADO Y DATOS PREVIOS
+data/backups/antes-medios-20261103-220702/biblioteca.db
+{'Usuarios': 2, 'Libros': 24, 'Prestamos': 0}
+Portadas heredadas pendientes de importar: 0.
+
+RESULTADOS FINALES EN EL PROYECTO ACTUALIZADO
+- npm ci desde cero: aprobado en un directorio temporal independiente.
+- npm run check:runtime: aprobado; Node 26.12.0, SQLite y Sharp operativos.
+- npm test: 17 pruebas aprobadas, 0 fallidas.
+- npm run test:browser: aprobado en dos sesiones de Chromium, con archivado,
+  historial conservado y bloqueo efectivo de scripts/eventos inline por CSP.
+- npm audit del lockfile aplicado: 0 vulnerabilidades conocidas en todos los niveles.
+- git diff --check: sin errores.
+- Esquema SQL de referencia ejecutado correctamente en una base en memoria.
+- Migracion real: columnas deleted_at y triggers verificados; health y CSP correctos.
+- Datos reales conservados: 2 usuarios, 24 libros y 0 prestamos, antes y despues.
+- No habia portadas heredadas que migrar en este proyecto.
+- No se ejecuto limpieza destructiva sobre las portadas reales.
+- Workflow de CI preparado; ejecucion remota pendiente de publicar los cambios.

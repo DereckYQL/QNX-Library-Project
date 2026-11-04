@@ -1,0 +1,32 @@
+CORRECCIONES DE SEGURIDAD CRITICAS - QNX LIBRARY
+Fecha: 2026-11-03
+
+Alcance: C-01 y C-02 del informe original, mas la proteccion del secreto JWT
+necesaria para evitar un acceso administrativo alternativo conocido.
+
+C-01: SQLite trasladado de public/database a data/; datos privados ignorados
+por Git. Schema trasladado a database/. Express publica solo activos del
+navegador y rechaza las rutas privadas. DB_PATH dentro de public se rechaza,
+incluso si pasa por enlaces simbolicos. /api/health no revela rutas internas.
+
+C-02: eliminada la creacion automatica de usuarios demo en el backend. El alta
+administrativa se realiza con npm run create-admin, email configurado y
+contrasena por stdin. No sobrescribe usuarios existentes ni imprime secretos.
+Las contrasenas demo heredadas se deshabilitan al iniciar conservando historial.
+Una cuenta eliminada no se recrea.
+
+Proteccion adicional: JWT_SECRET obligatorio (minimo 32 caracteres), sin valores
+predeterminados ni el ejemplo anterior. Se rota el secreto local para invalidar
+sesiones anteriores. El servidor espera a que la base se inicialice antes de
+escuchar y comunica fallas de inicializacion o puerto de forma controlada.
+
+Entorno: el binario sqlite3 instalado era para Windows. Se reconstruyo desde
+las fuentes locales para Linux y la version actual de Node, sin descargar
+paquetes. El README documenta instalacion y configuracion.
+
+Limites: el modo estatico conserva cuentas demo y autorizacion local; se documenta
+explicitamente como demostracion. Los restantes hallazgos altos y medios del
+informe original no forman parte de estas correcciones y siguen pendientes.
+Las versiones de SQLite presentes en el historial de GitHub no desaparecen al
+retirar el archivo del arbol actual. No se reescribio el historial ni se realizo
+push a GitHub. Considerar expuestas las credenciales previamente publicadas.

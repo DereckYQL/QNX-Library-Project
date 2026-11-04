@@ -6,3 +6,12 @@ public/uploads/*
 
 public/database/*.db-wal
 public/database/*.db-shm
+
+# Private runtime data and database backups
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.bak

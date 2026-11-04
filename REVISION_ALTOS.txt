@@ -1,0 +1,113 @@
+CORRECCIONES DE NIVEL ALTO - QNX LIBRARY
+Fecha: 2026-11-03
+Base: informe original INFORME_AUDITORIA_QNX_LIBRARY.txt.
+
+A-01 - SECRETO JWT CONOCIDO
+Corregido en la fase critica y conservado: secreto obligatorio, sin valores
+predeterminados ni ejemplos aceptados. La nueva sesion incluye una version;
+JWT anteriores sin version se rechazan.
+
+A-02 - AUTORIZACION LOCAL
+Corregido: la interfaz del servidor obtiene identidad de /api/auth/me y utiliza
+la API para las operaciones. No toma el rol de qnx_user en localStorage. Cada
+operacion protegida comprueba el usuario y su version actuales en SQLite.
+El modo estatico ahora es solo un catalogo de demostracion: no crea cuentas,
+no permite CRUD administrativo ni prestamos y no acepta tokens static-ID.
+No se intenta proteger localStorage como si fuera una autoridad confiable.
+
+A-03 - REINICIO DESTRUCTIVO LOCAL
+Corregido: initDB ya no compara hashes demo ni elimina la base. Se agrega una
+version de esquema sin quitar usuarios, libros ni prestamos existentes. Si el
+JSON o el formato no son validos se conserva el valor original y se informa
+el error. Los datos antiguos no se importan automaticamente al servidor.
+
+A-04 - CONCURRENCIA Y ATOMICIDAD
+Corregido: prestamos y devoluciones usan conexiones dedicadas, BEGIN IMMEDIATE,
+COMMIT y ROLLBACK. Las escrituras se ponen en cola antes de abrir la transaccion,
+evita que esperas de bloqueo SQLite agoten los trabajadores de Node. El stock
+se actualiza condicionalmente; la devolucion cambia estado una sola vez.
+Hay indice unico de prestamos pendientes por usuario/libro y triggers que
+impiden stock negativo. Los vencidos tambien cuentan como pendientes.
+Las autorizaciones se revalidan dentro de las transacciones de escritura.
+Si una base antigua tiene duplicados que impiden crear el indice, el inicio
+falla sin borrar historial: requiere resolver esos datos sobre un backup.
+
+A-05 - VALIDACION Y ERRORES ASINCRONOS
+Corregido: validacion de tipos, longitudes, numeros enteros, identificadores,
+consultas y contrasenas. Los handlers async pasan sus excepciones al middleware
+central. JSON y multipart malformados producen errores controlados. Errores SQL
+y conflictos no exponen consultas ni trazas al cliente. Se esperan las
+migraciones antes de abrir el puerto y bcrypt se utiliza de forma asincrona.
+
+A-06 - PERMISOS OBSOLETOS EN JWT
+Corregido: los tokens incluyen id y auth_version. El servidor obtiene el rol
+de SQLite; cambiarlo incrementa la version e invalida las sesiones anteriores,
+incluso si despues se restaura el rol previo. Eliminar un usuario invalida sus
+tokens. La creacion de administradores tambien verifica el usuario actual;
+no se confia en claims rol proporcionados por el token.
+
+A-07 - DEPENDENCIAS VULNERABLES
+Corregido: Multer actualizado a 2.5.0. La auditoria completa encontro tambien
+problemas transitivos altos y criticos: se actualizaron Express a 4.22.3,
+sqlite3 a 6.0.1 y dependencias compatibles (incluidos body-parser 1.20.9,
+proxy-addr 2.0.8 y tar 7.5.22). Se regenero el lockfile y se compilo SQLite para
+Linux. Requiere Node >=22.9.0.
+Referencia oficial Multer: https://github.com/expressjs/multer/releases/tag/v2.5.0
+Referencia SQLite: https://github.com/TryGhost/node-sqlite3/releases/tag/v6.0.1
+Nota de mantenimiento: el repositorio upstream de node-sqlite3 esta archivado;
+considerar una futura migracion a un controlador mantenido o SQLite nativo de
+Node. La version instalada no presenta avisos en la auditoria realizada.
+
+A-08 - FRONTEND Y BACKEND DESCONECTADOS
+Corregido: runtime-config.js establece un modo explicito. data-api.js concentra
+login, registro, catalogo, administracion, prestamos, devoluciones y portadas.
+En modo servidor no se usa la base local, ni se cambia a ella si falla la API.
+Dos clientes independientes ven el mismo inventario e historial propio.
+La configuracion estatica sigue funcionando sin servidor como catalogo de solo
+lectura. Las cuentas del servidor requieren una contrasena de registro minima
+de 12 caracteres y como maximo 72 bytes.
+
+CORRECCIONES RELACIONADAS NECESARIAS PARA COMPARTIR DATOS
+- Escape de textos y atributos al renderizar libros y prestamos, validacion de
+  URLs y rechazo de protocolos activos. Probado con un titulo que contiene HTML.
+- Eliminaciones de usuarios/libros con historial bloqueadas para no destruir
+  trazabilidad o perder inventario mediante ON DELETE CASCADE.
+- Subidas limitadas, extension generada a partir de la firma de formato,
+  rechazo de SVG y cabecera nosniff. Esto no equivale a un analisis antivirus
+  ni a decodificar/recodificar todas las imagenes; sigue siendo una mejora futura.
+- Sin fallback visual que muestre libros inventados cuando la API falla.
+- Correcciones de navegacion, fechas de calendario y consultas asincronas para
+  impedir que respuestas antiguas sustituyan resultados recientes del catalogo.
+
+VALIDACION
+Se incorporaron pruebas automatizadas de rutas privadas y configuracion,
+revocacion, roles falsificados, entradas/JSON/multipart invalidos, ultima copia
+bajo solicitudes concurrentes, prestamos duplicados, doble devolucion y rollback
+ante errores deliberadamente inyectados. Se probaron conservacion de datos
+locales y falta de fallback tras errores de red.
+Prueba real en dos sesiones aisladas de Chromium: login y registro desde los
+formularios, alta de libro, busqueda, prestamo y devolucion, inventario compartido,
+XSS, rol local falsificado y demostracion estatica con datos heredados.
+
+No se modificaron cuentas ni prestamos reales durante las pruebas. Antes de
+aplicar la migracion al proyecto se conserva un backup privado de SQLite.
+Los resultados finales de npm test, test:browser y npm audit se registran al
+final de este archivo tras la verificacion definitiva.
+
+LIMITES Y PENDIENTES
+Los hallazgos medios no relacionados no se consideran todos resueltos. Sigue
+siendo recomendable una politica de bajas logicas, migraciones SQL versionadas,
+backups programados, actualizacion automatica de vencimientos y CI. Las bases
+antiguas siguen en el historial remoto hasta una accion especifica sobre GitHub.
+No se realizo commit, push ni reescritura del historial.
+
+RESULTADOS FINALES EN EL PROYECTO ACTUALIZADO
+- npm test: 12 pruebas aprobadas, 0 fallidas.
+- npm run test:browser: aprobado en dos sesiones de Chromium.
+- npm audit: 0 vulnerabilidades conocidas (0 altas, 0 criticas).
+- Migracion de SQLite real: verificada con inicio temporal y /api/health.
+- Datos conservados: 2 usuarios, 24 libros, 0 prestamos (antes y despues).
+- Backup privado: data/backups/antes-altos-20261103-214854/biblioteca.db.
+- Bases y backups excluidos de Git; ningun archivo .db dentro de public.
+- Se corrigieron durante la validacion el bloqueo de escritores concurrentes
+  y la respuesta ante multipart incompleto; las pruebas finales cubren ambos.

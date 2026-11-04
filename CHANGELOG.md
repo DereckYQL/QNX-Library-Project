@@ -1,5 +1,19 @@
 # Changelog - QNX Library
 
+## [v3.0.0] - 2026-11-03
+
+- API e interfaz compartidas, SQLite/portadas privados y catalogo estatico de solo lectura.
+- Corregidos los hallazgos criticos, altos y medios de la auditoria: permisos,
+  sesiones revocables, validacion, concurrencia, XSS, portadas y entorno nativo.
+- Migraciones SQL con SHA-256 y esquema generado; stock consistente y vencimientos UTC.
+- Backups completos verificados, restauracion probada y nueva epoca de sesion.
+- Logs JSON sin datos sensibles, cierre ordenado y plantillas HTTPS/systemd.
+- CI con navegador, auditoria de dependencias, Gitleaks y Dependabot semanal.
+- Documentacion operativa y criterios minimos de uso real con pruebas.
+- Cambio incompatible: no hay cuentas demo de servidor, se invalidan JWT antiguos
+  y el modo estatico ya no ofrece escritura ni autenticacion local.
+
+
 ## [v2.5.0] - 2026-08-28 - SQLite + Admin/Visitante + DB Browser + BAT oculto
 
 **Base:** v2.4 MySQL
